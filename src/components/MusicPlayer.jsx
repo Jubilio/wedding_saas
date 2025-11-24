@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const MusicPlayer = () => {
-  // Initialize state from localStorage to avoid setState in useEffect
   const [isPlaying, setIsPlaying] = useState(() => {
     const savedPreference = localStorage.getItem('musicPlaying');
     return savedPreference === 'true';
   });
   
-  const audioRef = useRef(new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')); // Placeholder URL
+  // Someday - Jonny Easton (Classical Wedding Music from Uppbeat)
+  const audioRef = useRef(new Audio('/music/someday.mp3'));
 
   useEffect(() => {
     const audio = audioRef.current;
