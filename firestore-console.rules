@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    match /rsvps/{rsvpId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /guests/{guestId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

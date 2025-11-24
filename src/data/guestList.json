@@ -1,0 +1,215 @@
+{
+  "groups": [
+    {
+      "id": "jubilio-1-wimbi",
+      "name": "Jubílio 1 - Wimbi",
+      "maxGuests": 10,
+      "guests": [
+        "Stelio e Esposa",
+        "Basílio e Esposa",
+        "Domingos e Esposa",
+        "Eduardo e Esposa",
+        "Adonísio e Esposa"
+      ]
+    },
+    {
+      "id": "binth-2-maringanha",
+      "name": "Binth 2 - Maringanha",
+      "maxGuests": 5,
+      "guests": [
+        "Gilda e Esposa",
+        "Ana e Esposa",
+        "Jéssica",
+        "Marla",
+        "Milma",
+        "Wilma",
+        "Duda",
+        "Amanda"
+      ]
+    },
+    {
+      "id": "binth-1-paquirequete",
+      "name": "Binth 1 - Paquitequete",
+      "maxGuests": 5,
+      "guests": [
+        "Lito e Esposa",
+        "Denise e Esposo",
+        "Felipe e Esposa",
+        "Jéssica e Esposo",
+        "Bia e Esposo"
+      ]
+    },
+    {
+      "id": "binth-5-mahate",
+      "name": "Binth 5 - Mahate",
+      "maxGuests": 5,
+      "guests": [
+        "Papá",
+        "Tia Teu",
+        "Tia Paula e Esposo",
+        "Tia Bernadete e Esposo",
+        "Martinho",
+        "Aninha e Esposo"
+      ]
+    },
+    {
+      "id": "binth-7-napica",
+      "name": "Binth 7 - Napica",
+      "maxGuests": 5,
+      "guests": ["", "", "", "", ""]
+    },
+    {
+      "id": "binth-10-kiddos",
+      "name": "Binth 10 (Kiddos)",
+      "maxGuests": 5,
+      "guests": [
+        "Rozy",
+        "Naila",
+        "Luciana",
+        "Kayron",
+        "Yurik",
+        "Ayanda",
+        "Junior",
+        "Cris",
+        "Winne",
+        "Joyce"
+      ]
+    },
+    {
+      "id": "binth-jubilio-natite",
+      "name": "Binth e Jubílio - Natite",
+      "maxGuests": 5,
+      "guests": [
+        "Jalane e Esposa",
+        "Lucas",
+        "Horácio",
+        "Cláudia",
+        "Naira e Esposo",
+        "Moisés e Esposa",
+        "Emilia"
+      ]
+    },
+    {
+      "id": "binth-6-familia-nanhimbe",
+      "name": "Binth 6 (Família) - Nanhimbe",
+      "maxGuests": 5,
+      "guests": [
+        "Mamã",
+        "Lídia",
+        "Graça e Esposo",
+        "Odília e Esposo",
+        "Zeca e Esposa",
+        "Evinha e Esposo"
+      ]
+    },
+    {
+      "id": "binth-jubilio-expansao",
+      "name": "Binth e Jubílio - Expansão",
+      "maxGuests": 5,
+      "guests": [
+        "Jamisse e Esposa",
+        "Judite e Esposo",
+        "Domingos e Esposa",
+        "Manjate e Esposa",
+        "Ana Maria",
+        "Natalia"
+      ]
+    },
+    {
+      "id": "binth-jubilio-cariaco",
+      "name": "Binth e Jubílio - Cariaco",
+      "maxGuests": 5,
+      "guests": [
+        "Vovó Ismael e Esposa",
+        "Tio Selmo",
+        "Preciosa e Esposo",
+        "Lili",
+        ""
+      ]
+    },
+    {
+      "id": "binth-4-ingoanne",
+      "name": "Binth 4 - Ingoanne",
+      "maxGuests": 5,
+      "guests": [
+        "Cátia e Esposo",
+        "Ilsio e Esposa",
+        "Manuel",
+        "Juvêncio e Esposa",
+        "Marieta e Esposo",
+        "Lídia"
+      ]
+    },
+    {
+      "id": "jubilio-3-chuiba",
+      "name": "Jubílio 3 - Chuíba",
+      "maxGuests": 5,
+      "guests": [
+        "Filomena e Esposo",
+        "Aventina e Esposo",
+        "Sandra e Esposo",
+        "Abraao e Esposa",
+        "Angelica",
+        "Benevolencia"
+      ]
+    },
+    {
+      "id": "jubilio-4-mama-muxara",
+      "name": "Jubílio 4 (Mamã) - Muxara",
+      "maxGuests": 5,
+      "guests": [
+        "Mamã e Esposa",
+        "Mira e Esposo",
+        "Santos e Esposa",
+        "Santos e Esposa",
+        "Gilda e Esposo"
+      ]
+    },
+    {
+      "id": "jubilio-6-metula",
+      "name": "Jubílio 6 - Metula",
+      "maxGuests": 5,
+      "guests": [
+        "Diamantino e Esposa",
+        "Leonor",
+        "Miguel",
+        "Shélia",
+        "Laura",
+        "Clésia",
+        "Dantíbio",
+        "Diamantino",
+        "Marcelo"
+      ]
+    },
+    {
+      "id": "jubilio-5-papa-gigone",
+      "name": "Jubílio 5 (Papá) - Gigone",
+      "maxGuests": 5,
+      "guests": [
+        "Papá e Esposa",
+        "Avó",
+        "Tia Rosinha",
+        "Deolmestre e Esposa",
+        "Armando e Esposa",
+        "Maurício e Esposa"
+      ]
+    },
+    {
+      "id": "binth-9-muharia",
+      "name": "Binth 9 - Muharia",
+      "maxGuests": 5,
+      "guests": [
+        "Júnior",
+        "Liane",
+        "Tino",
+        "Vavá",
+        "Lali",
+        "Cece",
+        "Lili",
+        "Dama",
+        "Tonny",
+        "Milena"
+      ]
+    }
+  ]
+}

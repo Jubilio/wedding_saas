@@ -1,0 +1,48 @@
+# Netlify Configuration
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+# Security Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking
+    X-Frame-Options = "DENY"
+    
+    # Prevent MIME type sniffing
+    X-Content-Type-Options = "nosniff"
+    
+    # Enable XSS protection
+    X-XSS-Protection = "1; mode=block"
+    
+    # Referrer policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Content Security Policy
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https: blob:;
+      connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+      frame-src https://www.google.com https://maps.google.com;
+      media-src 'self' https:;
+    """
+    
+    # Permissions Policy (formerly Feature Policy)
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Redirect HTTP to HTTPS
+[[redirects]]
+  from = "http://binthejubilio.netlify.app/*"
+  to = "https://binthejubilio.netlify.app/:splat"
+  status = 301
+  force = true
+
+# SPA redirect - all routes to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Wedding photos - pending approval
+    match /wedding-photos/pending/{photoId} {
+      // Anyone can upload
+      allow create: if request.resource.size < 5 * 1024 * 1024 && // 5MB limit
+                       request.resource.contentType.matches('image/.*');
+      
+      // Only admin can read, update, delete
+      allow read, update, delete: if request.auth != null;
+    }
+    
+    // Wedding photos - approved
+    match /wedding-photos/approved/{photoId} {
+      // Public read access
+      allow read: if true;
+      
+      // Only admin can write
+      allow write: if request.auth != null;
+    }
+    
+    // Thumbnails - public read
+    match /wedding-photos/thumbnails/{photoId} {
+      // Public read access
+      allow read: if true;
+      
+      // Anyone can create (for uploads)
+      allow create: if request.resource.size < 1 * 1024 * 1024 && // 1MB limit
+                       request.resource.contentType.matches('image/.*');
+      
+      // Only admin can update/delete
+      allow update, delete: if request.auth != null;
+    }
+  }
+}
