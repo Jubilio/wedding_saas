@@ -36,8 +36,8 @@
 
 # Redirect HTTP to HTTPS
 [[redirects]]
-  from = "http://binthejubilio.netlify.app/*"
-  to = "https://binthejubilio.netlify.app/:splat"
+  from = "http://binthjubilio.netlify.app/"
+  to = "https://binthjubilio.netlify.app/:splat"
   status = 301
   force = true
 
