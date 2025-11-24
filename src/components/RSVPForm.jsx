@@ -370,7 +370,7 @@ const RSVPForm = () => {
             {/* Attending */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Você irá comparecer? *
+                Irá comparecer? *
               </label>
               <div className="flex gap-4">
                 <label className="flex-1 cursor-pointer">

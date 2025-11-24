@@ -102,8 +102,8 @@ const Home = () => {
             className="text-lg text-gray-600 leading-relaxed"
           >
             <span className="float-left text-6xl font-serif text-gold leading-none pr-2 pt-1">C</span>
-            om grande alegria, convidamos você para celebrar conosco o nosso casamento.
-            Será uma honra compartilhar este momento especial com pessoas tão queridas.
+            om grande alegria, convidamo-lo/a para celebrar connosco o nosso casamento.
+            Será uma honra partilhar este momento especial com pessoas tão queridas.
           </motion.p>
         </div>
       </motion.section>

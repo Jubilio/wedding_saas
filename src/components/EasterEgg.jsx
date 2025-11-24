@@ -38,11 +38,11 @@ const EasterEgg = () => {
               >
                 <p className="text-3xl text-center mb-4">🎉✨💕</p>
                 <p className="text-white text-center font-serif text-xl mb-2">
-                  Você descobriu nosso segredo!
+                  Descobriu o nosso segredo!
                 </p>
                 <p className="text-white/90 text-center text-sm">
                   Obrigado por explorar nosso site com tanto carinho. 
-                  Mal podemos esperar para celebrar com você!
+                  Mal podemos esperar para celebrar consigo!
                 </p>
                 <p className="text-white text-center font-serif text-lg mt-4">
                   - Binth & Jubílio ♥
