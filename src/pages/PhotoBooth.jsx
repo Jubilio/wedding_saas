@@ -177,6 +177,7 @@ const PhotoBooth = () => {
                     <img
                       src={selectedFrame.preview}
                       alt="Frame overlay"
+                      loading="lazy"
                       className="absolute inset-0 w-full h-full pointer-events-none z-10"
                       style={{ mixBlendMode: 'normal' }}
                       onError={(e) => {
@@ -201,12 +202,14 @@ const PhotoBooth = () => {
                   <img
                     src={capturedImage}
                     alt="Captured"
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                   {selectedFrame.preview && (
                     <img
                       src={selectedFrame.preview}
                       alt="Frame overlay"
+                      loading="lazy"
                       className="absolute inset-0 w-full h-full pointer-events-none"
                     />
                   )}
@@ -238,6 +241,7 @@ const PhotoBooth = () => {
                           <img
                             src={frame.preview}
                             alt={frame.name}
+                            loading="lazy"
                             className="w-full h-full object-cover"
                           />
                         ) : (

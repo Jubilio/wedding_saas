@@ -1,10 +1,24 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import viteCompression from 'vite-plugin-compression'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Gzip compression
+    viteCompression({
+      algorithm: 'gzip',
+      ext: '.gz',
+    }),
+    // Brotli compression
+    viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+    }),
+  ],
   build: {
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {

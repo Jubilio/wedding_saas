@@ -4,6 +4,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { searchGuest, validateGuest, parseCompanionName } from '../utils/guestUtils';
 import InvitationCard from './InvitationCard';
+import DOMPurify from 'dompurify';
 
 const RSVPForm = () => {
   const [formData, setFormData] = useState({
@@ -24,9 +25,12 @@ const RSVPForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCompanion, setHasCompanion] = useState(false);
 
-  // Sanitize input to prevent XSS
+  // Sanitize input to prevent XSS using DOMPurify
   const sanitizeInput = (input) => {
-    return input.replace(/<[^>]*>/g, '');
+    return DOMPurify.sanitize(input, { 
+      ALLOWED_TAGS: [], // Strip all HTML tags
+      KEEP_CONTENT: true // Keep the text content
+    });
   };
 
   const handleNameChange = (e) => {

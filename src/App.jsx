@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
 
 // Components
 import Header from './components/Header';
@@ -9,6 +10,7 @@ import MusicPlayer from './components/MusicPlayer';
 import MessagesButton from './components/MessagesButton';
 import ScrollProgressIndicator from './components/ScrollProgressIndicator';
 import LoadingSkeleton from './components/LoadingSkeleton';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Core Pages (always needed)
 import Splash from './pages/Splash';
@@ -46,54 +48,77 @@ const AppContent = () => {
   }, [location.pathname]);
 
   return (
-    <div className="font-sans text-neutral-gray antialiased selection:bg-gold selection:text-white">
-      <ScrollToTop />
-      {!isSplash && <ScrollProgressIndicator />}
-      {!isSplash && location.pathname !== '/gestao-casamento-2026' && <Header />}
-      <main className="min-h-screen">
-        <AnimatePresence mode='wait'>
-          <Routes>
-            <Route path="/" element={<Splash />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/historia" element={<Historia />} />
-            <Route path="/evento" element={<Evento />} />
-            <Route path="/rsvp" element={<RSVP />} />
-            <Route path="/galeria" element={
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
-                <Galeria />
-              </Suspense>
-            } />
-            <Route path="/presentes" element={
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
-                <Presentes />
-              </Suspense>
-            } />
-            <Route path="/contato" element={<Contato />} />
-            <Route path="/photo-booth" element={
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
-                <PhotoBooth />
-              </Suspense>
-            } />
-            <Route path="/mensagens" element={
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
-                <MessagesWall />
-              </Suspense>
-            } />
-            <Route 
-              path="/gestao-casamento-2026" 
-              element={
+    <ErrorBoundary>
+      <div className="font-sans text-neutral-gray antialiased selection:bg-gold selection:text-white">
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#fff',
+              color: '#333',
+              borderRadius: '12px',
+              padding: '16px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#D4AF37',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              duration: 5000,
+            },
+          }}
+        />
+        <ScrollToTop />
+        {!isSplash && <ScrollProgressIndicator />}
+        {!isSplash && location.pathname !== '/gestao-casamento-2026' && <Header />}
+        <main className="min-h-screen">
+          <AnimatePresence mode='wait'>
+            <Routes>
+              <Route path="/" element={<Splash />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/historia" element={<Historia />} />
+              <Route path="/evento" element={<Evento />} />
+              <Route path="/rsvp" element={<RSVP />} />
+              <Route path="/galeria" element={
                 <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
-                  <AdminDashboard />
+                  <Galeria />
                 </Suspense>
-              } 
-            />
-          </Routes>
-        </AnimatePresence>
-      </main>
-      {!isSplash && location.pathname !== '/gestao-casamento-2026' && <Footer />}
-      {!isSplash && <MusicPlayer />}
-      {!isSplash && <MessagesButton />}
-    </div>
+              } />
+              <Route path="/presentes" element={
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
+                  <Presentes />
+                </Suspense>
+              } />
+              <Route path="/contato" element={<Contato />} />
+              <Route path="/photo-booth" element={
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
+                  <PhotoBooth />
+                </Suspense>
+              } />
+              <Route path="/mensagens" element={
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
+                  <MessagesWall />
+                </Suspense>
+              } />
+              <Route 
+                path="/gestao-casamento-2026" 
+                element={
+                  <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div></div>}>
+                    <AdminDashboard />
+                  </Suspense>
+                } 
+              />
+            </Routes>
+          </AnimatePresence>
+        </main>
+        {!isSplash && location.pathname !== '/gestao-casamento-2026' && <Footer />}
+        {!isSplash && <MusicPlayer />}
+        {!isSplash && <MessagesButton />}
+      </div>
+    </ErrorBoundary>
   );
 }
 

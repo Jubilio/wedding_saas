@@ -22,7 +22,7 @@
     # Content Security Policy
     Content-Security-Policy = """
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com;
+      script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: https: blob:;
@@ -30,6 +30,9 @@
       frame-src https://www.google.com https://maps.google.com;
       media-src 'self' https: blob:;
     """
+    
+    # HTTP Strict Transport Security (HSTS)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     
     # Permissions Policy (formerly Feature Policy)
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"

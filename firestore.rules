@@ -4,9 +4,12 @@ service cloud.firestore {
     
     // Helper function to check if user is authenticated admin
     function isAdmin() {
-      return request.auth != null; 
-      // In a real app, you'd check for specific admin claims or IDs
-      // e.g., return request.auth.uid == 'ADMIN_UID';
+      // Only allow specific admin emails
+      return request.auth != null && 
+             request.auth.token.email in [
+               'admin@binthjubilio.com', 
+               // Add other admin emails here
+             ];
     }
 
     // RSVPs Collection
