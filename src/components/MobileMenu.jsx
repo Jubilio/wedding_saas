@@ -94,21 +94,6 @@ const MobileMenu = ({ isOpen, onClose, links, currentPath }) => {
               {link.name}
             </Link>
           ))}
-          
-          <div 
-            className={`transition-all duration-300 transform ${
-              isOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-            }`}
-            style={{ transitionDelay: isOpen ? `${links.length * 50}ms` : '0ms' }}
-          >
-            <Link
-              to="/rsvp"
-              onClick={onClose}
-              className="block bg-gold text-white text-center py-3 rounded-full hover:bg-opacity-90 transition-all active:scale-95"
-            >
-              Confirmar Presença
-            </Link>
-          </div>
         </nav>
       </div>
     </div>

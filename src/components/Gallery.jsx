@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 
 // Import images
 import hero from '../assets/hero.jpg';
@@ -9,145 +9,50 @@ import groomBench from '../assets/groom_bench.jpg';
 import brideBench from '../assets/bride_bench.jpg';
 
 const Gallery = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
   const images = useMemo(() => [
-    { src: hero, alt: 'Binth & Jubílio - Hero' },
-    { src: coupleStanding, alt: 'Binth & Jubílio - Juntos' },
-    { src: groomBeach, alt: 'Jubílio na Praia' },
-    { src: groomBench, alt: 'Jubílio no Banco' },
-    { src: brideBench, alt: 'Binth no Banco' },
+    { src: hero, alt: 'Binth & Jubílio - Hero', span: 'md:col-span-2 md:row-span-2' },
+    { src: coupleStanding, alt: 'Binth & Jubílio - Juntos', span: 'md:col-span-1 md:row-span-1' },
+    { src: groomBeach, alt: 'Jubílio na Praia', span: 'md:col-span-1 md:row-span-1' },
+    { src: groomBench, alt: 'Jubílio no Banco', span: 'md:col-span-1 md:row-span-2' },
+    { src: brideBench, alt: 'Binth no Banco', span: 'md:col-span-1 md:row-span-1' },
   ], []);
 
-  const openLightbox = (index) => {
-    setCurrentIndex(index);
-    setSelectedImage(images[index]);
-  };
-
-  const closeLightbox = () => {
-    setSelectedImage(null);
-  };
-
-  const goToNext = useCallback(() => {
-    const nextIndex = (currentIndex + 1) % images.length;
-    setCurrentIndex(nextIndex);
-    setSelectedImage(images[nextIndex]);
-  }, [currentIndex, images]);
-
-  const goToPrevious = useCallback(() => {
-    const prevIndex = (currentIndex - 1 + images.length) % images.length;
-    setCurrentIndex(prevIndex);
-    setSelectedImage(images[prevIndex]);
-  }, [currentIndex, images]);
-
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowRight') goToNext();
-    if (e.key === 'ArrowLeft') goToPrevious();
-  }, [goToNext, goToPrevious]); 
-
-  React.useEffect(() => {
-    if (selectedImage) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [selectedImage, currentIndex, handleKeyDown]);
-
   return (
-    <>
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-        {images.map((image, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            className="relative overflow-hidden rounded-2xl shadow-lg cursor-pointer group break-inside-avoid mb-6 hover-lift"
-            onClick={() => openLightbox(index)}
-          >
-            <img
-              src={image.src}
-              alt={image.alt}
-              loading="lazy"
-              className="w-full object-cover transition-transform duration-[3000ms] ease-out group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="text-white text-4xl"
-              >
-                🔍
-              </motion.div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+      {images.map((image, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            delay: index * 0.15,
+            duration: 0.8,
+            ease: [0.22, 1, 0.36, 1]
+          }}
+          className={`relative overflow-hidden rounded-2xl shadow-xl group ${image.span}`}
+        >
+          {/* Image with Ken Burns effect on hover */}
+          <img
+            src={image.src}
+            alt={image.alt}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-[5000ms] ease-out group-hover:scale-110"
+          />
+          
+          {/* Elegant overlay with gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+              <p className="text-white font-serif text-lg">
+                {image.alt}
+              </p>
             </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Lightbox */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
-            onClick={closeLightbox}
-          >
-            {/* Close Button */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 text-white text-4xl hover:text-gold transition-colors z-10"
-            >
-              ×
-            </button>
-
-            {/* Previous Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToPrevious();
-              }}
-              className="absolute left-4 text-white text-5xl hover:text-gold transition-colors z-10"
-            >
-              ‹
-            </button>
-
-            {/* Image */}
-            <motion.img
-              key={currentIndex}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              src={selectedImage.src}
-              alt={selectedImage.alt}
-              className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-
-            {/* Next Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToNext();
-              }}
-              className="absolute right-4 text-white text-5xl hover:text-gold transition-colors z-10"
-            >
-              ›
-            </button>
-
-            {/* Image Counter */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-lg">
-              {currentIndex + 1} / {images.length}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+          </div>
+          
+          {/* Subtle border animation */}
+          <div className="absolute inset-0 border-2 border-gold/0 group-hover:border-gold/50 transition-all duration-500 rounded-2xl"></div>
+        </motion.div>
+      ))}
+    </div>
   );
 };
 

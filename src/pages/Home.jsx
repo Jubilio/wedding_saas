@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import Countdown from '../components/Countdown';
 import FloatingParticles from '../components/FloatingParticles';
 import RotatingQuotes from '../components/RotatingQuotes';
@@ -132,50 +131,6 @@ const Home = () => {
 
       {/* Rotating Quotes */}
       <RotatingQuotes />
-
-      {/* CTA Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8 }}
-        className="py-20 px-4"
-      >
-        <div className="container mx-auto max-w-2xl text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-4xl md:text-5xl font-serif text-neutral-gray mb-8"
-          >
-            Confirme sua Presença
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-lg text-gray-600 mb-8"
-          >
-            Sua presença é muito importante para nós. Por favor, confirme até 15 de fevereiro de 2026.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-          >
-            <Link
-              to="/rsvp"
-              className="inline-block bg-gold text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-all shadow-lg hover:shadow-2xl hover:scale-105 hover:-translate-y-1 relative overflow-hidden group"
-            >
-              <span className="relative z-10">Confirmar Presença</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></span>
-            </Link>
-          </motion.div>
-        </div>
-      </motion.section>
     </div>
   );
 };
