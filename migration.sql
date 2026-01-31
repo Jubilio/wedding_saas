@@ -99,3 +99,18 @@ CREATE POLICY "Allow public read" ON public.tables FOR SELECT TO anon USING (tru
 -- NOTE: Run this manually if table already exists:
 -- ALTER TABLE public.rsvps ADD COLUMN IF NOT EXISTS table_assignment TEXT;
 
+-- 10. Create 'public_messages' table for the wall
+CREATE TABLE IF NOT EXISTS public.public_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE public.public_messages ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Allow public read" ON public.public_messages FOR SELECT TO anon USING (true);
+CREATE POLICY "Allow public insert" ON public.public_messages FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "Enable all access for authenticated users" ON public.public_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);

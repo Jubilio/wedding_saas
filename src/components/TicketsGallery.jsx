@@ -2,11 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Download, Eye, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { Trash2, X } from 'lucide-react';
+import ConfirmModal from './ConfirmModal';
 
 const TicketsGallery = ({ rsvps }) => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    ticket: null
+  });
 
   // Fetch all tickets from Supabase Storage
   const fetchTickets = useCallback(async () => {
@@ -73,6 +80,37 @@ const TicketsGallery = ({ rsvps }) => {
     } catch (err) {
       console.error('Download error:', err);
       toast.error('Erro ao baixar ticket.');
+    }
+  };
+
+  const handleDelete = (ticket) => {
+    setConfirmModal({
+      isOpen: true,
+      ticket: ticket
+    });
+  };
+
+  const confirmDelete = async () => {
+    const ticket = confirmModal.ticket;
+    if (!ticket) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.storage
+        .from('wedding-photos')
+        .remove([`tickets/${ticket.name}`]);
+
+      if (error) throw error;
+
+      toast.success('Ticket removido com sucesso!');
+      setTickets(prev => prev.filter(t => t.id !== ticket.id));
+      setConfirmModal({ isOpen: false, ticket: null });
+      if (selectedTicket?.id === ticket.id) setSelectedTicket(null);
+    } catch (err) {
+      console.error('Error deleting ticket:', err);
+      toast.error('Erro ao remover ticket.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -148,18 +186,38 @@ const TicketsGallery = ({ rsvps }) => {
               <div className="p-4">
                 <h3 className="font-bold text-gray-800 truncate">{ticket.guestName}</h3>
                 <p className="text-xs text-gray-400 truncate mb-3">{ticket.inviteLabel}</p>
-                <button
-                  onClick={() => handleDownload(ticket)}
-                  className="w-full bg-gold/10 hover:bg-gold/20 text-gold px-4 py-2 rounded-xl flex items-center justify-center gap-2 font-medium transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Baixar
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleDownload(ticket)}
+                    className="flex-1 bg-gold/10 hover:bg-gold/20 text-gold px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all active:scale-95"
+                  >
+                    <Download className="w-4 h-4" />
+                    Baixar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(ticket)}
+                    className="bg-red-50 hover:bg-red-100 text-red-500 p-2.5 rounded-xl transition-all active:scale-95"
+                    title="Excluir ticket"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, ticket: null })}
+        onConfirm={confirmDelete}
+        title="Excluir Ticket Permanente?"
+        message={`Deseja realmente apagar o ticket de ${confirmModal.ticket?.guestName}? O arquivo será removido do servidor.`}
+        confirmText="Sim, Apagar"
+        isDangerous={true}
+        isLoading={isDeleting}
+      />
 
       {/* Lightbox Modal */}
       {selectedTicket && (

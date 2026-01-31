@@ -8,8 +8,8 @@ import beachKiss from '../assets/beach_kiss.jpg';
 import beachHug from '../assets/beach_hug.jpg';
 import beachHoldHands from '../assets/beach_hold_hands.jpg';
 import beachSmile from '../assets/beach_smile.jpg';
-import groomBench from '../assets/groom_bench.JPG';
-import brideBench from '../assets/bride_bench.JPG';
+import groomBench from '../assets/groom_bench.jpg';
+import brideBench from '../assets/bride_bench.jpg';
 
 const Gallery = () => {
   const images = useMemo(() => [

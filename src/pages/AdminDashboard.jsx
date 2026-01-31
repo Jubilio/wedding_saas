@@ -25,6 +25,8 @@ import InviteModal from '../components/InviteModal';
 import TableManagement from '../components/TableManagement';
 import SeatingChart from '../components/SeatingChart';
 import TicketsGallery from '../components/TicketsGallery';
+import MessagesManagement from '../components/MessagesManagement';
+import ConfirmModal from '../components/ConfirmModal';
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -239,7 +241,9 @@ const AdminDashboard = () => {
           const { error } = await supabase.from('invites').delete().eq('id', inviteId);
           if (error) throw error;
           toast.success("Convite excluído com sucesso.");
-          fetchData();
+          // Update local state to immediately hide from UI
+          setInvites(prev => prev.filter(inv => inv.id !== inviteId));
+          setRSVPs(prev => prev.filter(r => r.invite_id !== inviteId));
         } catch (error) {
           console.error("Error deleting invite:", error);
           toast.error("Erro ao deletar convite.");
@@ -451,6 +455,14 @@ const AdminDashboard = () => {
             }`}
           >
             Galeria de Tickets
+          </button>
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`pb-4 px-4 font-semibold transition-colors border-b-2 ${
+              activeTab === 'messages' ? 'border-gold text-gold' : 'border-transparent text-gray-500'
+            }`}
+          >
+            Mural de Mensagens
           </button>
         </div>
 
@@ -735,6 +747,9 @@ const AdminDashboard = () => {
         {/* --- TICKETS GALLERY TAB --- */}
         {activeTab === 'tickets' && <TicketsGallery rsvps={rsvps} />}
 
+        {/* --- MESSAGES MANAGEMENT TAB --- */}
+        {activeTab === 'messages' && <MessagesManagement />}
+
       </div>
 
       <InviteModal 
@@ -745,46 +760,16 @@ const AdminDashboard = () => {
         isLoading={isLoading}
       />
 
-      {/* --- CONFIRM MODAL --- */}
-      {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 overflow-hidden relative"
-          >
-            <div className="flex items-center gap-4 mb-6">
-              <div className={`p-3 rounded-full ${confirmModal.isDangerous ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
-                <AlertTriangle size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800">{confirmModal.title}</h3>
-            </div>
-            
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              {confirmModal.message}
-            </p>
-            
-            <div className="flex gap-4">
-              <button
-                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                className="flex-1 px-6 py-3 border border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmModal.onConfirm}
-                className={`flex-1 px-6 py-3 rounded-xl font-medium text-white transition-all shadow-lg active:scale-95 ${
-                  confirmModal.isDangerous 
-                    ? 'bg-red-600 hover:bg-red-700 shadow-red-200' 
-                    : 'bg-gold hover:bg-gold/90 shadow-gold/20'
-                }`}
-              >
-                {confirmModal.confirmText}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        isDangerous={confirmModal.isDangerous}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
