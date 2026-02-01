@@ -26,10 +26,12 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - Network first, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // Skip cross-origin requests for certain internal logic if needed
+  // For now, focus on fixing the TypeError
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful GET responses
+        // Cache successful GET responses from our own origin or trusted ones
         if (response.status === 200 && event.request.method === 'GET') {
           const responseClone = response.clone();
           caches.open(CACHE_NAME)
@@ -40,9 +42,25 @@ self.addEventListener('fetch', (event) => {
         
         return response;
       })
-      .catch(() => {
+      .catch(async () => {
         // Fallback to cache if network fails
-        return caches.match(event.request);
+        try {
+          const cache = await caches.open(CACHE_NAME);
+          const cachedResponse = await cache.match(event.request);
+          
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+        } catch (e) {
+          console.error('Cache access failed:', e);
+        }
+
+        // Return a basic fallback response to avoid "TypeError: Failed to convert value to 'Response'"
+        // This ensures the site stays functional (though possibly with missing assets)
+        return new Response('Offline / Network Error', {
+          status: 408,
+          headers: { 'Content-Type': 'text/plain' }
+        });
       })
   );
 });

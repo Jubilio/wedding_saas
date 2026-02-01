@@ -207,7 +207,7 @@ const MobileHome = () => {
               <p><span className="font-semibold text-neutral-800">Traje:</span> Passeio Completo</p>
             </div>
             <a 
-              href="https://maps.app.goo.gl/uX3L5S5V6qX3L5S5A" // Example link, user can update
+              href="https://www.google.com/maps/search/?api=1&query=MEA+Congregação+de+Mateque"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center text-gold font-bold text-xs uppercase tracking-widest bg-white px-4 py-2 rounded-full shadow-sm"
@@ -232,7 +232,7 @@ const MobileHome = () => {
               <p><span className="font-semibold text-neutral-800">Destaque:</span> Celebração e Confraternização</p>
             </div>
             <a 
-              href="https://maps.app.goo.gl/uX3L5S5V6qX3L5S5A" 
+              href="https://www.google.com/maps/search/?api=1&query=THAYANA+Eventos" 
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center text-gold font-bold text-xs uppercase tracking-widest bg-white px-4 py-2 rounded-full shadow-sm"
