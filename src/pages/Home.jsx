@@ -3,16 +3,32 @@ import { motion } from 'framer-motion';
 import Countdown from '../components/Countdown';
 import FloatingParticles from '../components/FloatingParticles';
 import RotatingQuotes from '../components/RotatingQuotes';
+import MobileHome from '../components/MobileHome';
 import heroImage from '../assets/hero.jpg';
 
 const Home = () => {
   const [scrollY, setScrollY] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
     const handleScroll = () => setScrollY(window.scrollY);
+
+    window.addEventListener('resize', handleResize);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
+
+  if (isMobile) {
+    return <MobileHome />;
+  }
+
   return (
     <div className="pt-16 relative">
       <FloatingParticles count={15} />
