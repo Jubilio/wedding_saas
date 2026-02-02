@@ -34,7 +34,8 @@ const TicketPage = () => {
         setRsvp({
           ...data,
           guestName: data.guest_name,
-          inviteLabel: data.invites?.label || 'Mesa Reservada'
+          inviteLabel: data.invites?.label || 
+                       (data.invites?.event && data.invites.event !== 'Casamento Binth & Jubilio' ? data.invites.event : 'Mesa Reservada')
         });
       } catch (err) {
         console.error('Error fetching ticket:', err);

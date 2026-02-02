@@ -116,12 +116,26 @@ const RSVPForm = ({ inviteData }) => {
     setIsSubmitting(true);
 
     try {
+      // 1. Determine Display Name (Main Guest + Companions)
+      let displayName = formData.name;
+      const count = parseInt(formData.guests);
+      
+      if (count > 1) {
+        if (allowedGuests && allowedGuests.length > 1) {
+          // Join names from the pre-defined list if available
+          displayName = allowedGuests.slice(0, count).map(g => g.name).join(' & ');
+        } else {
+          // Fallback if list is not available or mismatching
+          displayName = `${formData.name} & Acompanhante`;
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('submit-rsvp', {
         body: {
           invite_id,
-          guest_name: formData.name,
+          guest_name: displayName, // Save the combined name to DB
           attending: formData.attending === 'yes',
-          guests_count: formData.attending === 'yes' ? parseInt(formData.guests) : 0,
+          guests_count: formData.attending === 'yes' ? count : 0,
           phone: formData.phone,
           message: formData.message,
         }
@@ -133,8 +147,6 @@ const RSVPForm = ({ inviteData }) => {
       setSubmittedRsvpId(data.rsvpId);
       setSubmitted(true);
       
-      // No more auto-close timeout
-      // setTimeout(...) removed
     } catch (error) {
       console.error('❌ Error submitting RSVP:', error);
       setErrors({ submit: error.message || 'Erro ao enviar confirmação.' });
@@ -164,6 +176,25 @@ const RSVPForm = ({ inviteData }) => {
           </div>
       );
   }
+
+  // Consistent display name for UI preview
+  const getTicketDisplayName = () => {
+    const count = parseInt(formData.guests);
+    if (count > 1) {
+      if (allowedGuests && allowedGuests.length > 1) {
+        return allowedGuests.slice(0, count).map(g => g.name).join(' & ');
+      }
+      return `${formData.name} & Acompanhante`;
+    }
+    return formData.name;
+  };
+
+  // Consistent table name selection
+  const getTicketTableName = () => {
+    if (label) return label;
+    if (inviteData.event && inviteData.event !== 'Casamento Binth & Jubilio') return inviteData.event;
+    return 'Mesa Reservada';
+  };
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -199,13 +230,8 @@ const RSVPForm = ({ inviteData }) => {
             
             {/* InvitationCard Preview */}
             <InvitationCard
-              guestName={
-                allowedGuests && allowedGuests.length > 1 && parseInt(formData.guests) > 1
-                  ? allowedGuests.map(g => g.name).join(' & ')
-                  : formData.name
-              }
-              tableName={label || (inviteData.event !== 'Casamento Binth & Jubilio' ? inviteData.event : 'Mesa Reservada')}
-              tableLocation={''}
+              guestName={getTicketDisplayName()}
+              tableName={getTicketTableName()}
               rsvpId={submittedRsvpId}
               onActionComplete={handleClose}
             />

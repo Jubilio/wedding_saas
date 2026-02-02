@@ -3,7 +3,6 @@ import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Share2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { useState } from 'react';
@@ -113,45 +112,7 @@ const InvitationCard = ({ guestName, tableName, rsvpId, onActionComplete }) => {
       }, 'image/png');
 
     } catch {
-      toast.error('Erro ao gerar PNG. Tente novamente.');
-    }
-  };
-
-  const downloadAsPDF = async () => {
-    if (!cardRef.current) return;
-
-    try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        logging: false,
-        useCORS: true
-      });
-
-      // 1. Download PDF
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a5'
-      });
-
-      const imgWidth = 148; 
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(getSafeFilename(guestName, 'pdf'));
-      
-      // 2. Background Upload (Need blob again)
-      canvas.toBlob(async (blob) => {
-          if(blob) await uploadTicket(blob);
-      });
-
-      // 3. Close
-      toast.success('PDF baixado com sucesso!');
-      handleActionComplete();
-    } catch {
-      toast.error('Erro ao gerar PDF. Tente novamente.');
+      toast.error('Erro ao gerar imagem. Tente novamente.');
     }
   };
 
@@ -271,14 +232,7 @@ const InvitationCard = ({ guestName, tableName, rsvpId, onActionComplete }) => {
           className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gold text-gold hover:bg-gold/5 rounded-xl font-medium transition-colors"
         >
           <Download className="w-5 h-5" />
-          Baixar Ticket (PNG)
-        </button>
-        <button
-          onClick={downloadAsPDF}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gold text-gold hover:bg-gold/5 rounded-xl font-medium transition-colors"
-        >
-          <Download className="w-5 h-5" />
-          Baixar Ticket (PDF)
+          Baixar Ticket
         </button>
         <button
           onClick={shareToWhatsApp}
