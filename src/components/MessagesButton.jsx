@@ -11,7 +11,7 @@ const MessagesButton = () => {
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className="fixed bottom-20 right-4 z-50 bg-white text-rose-500 p-3 rounded-full shadow-lg hover:shadow-xl transition-shadow border-2 border-rose-100 flex items-center justify-center group"
+        className="fixed md:bottom-24 bottom-36 right-4 z-40 bg-white text-rose-500 p-3 rounded-full shadow-lg hover:shadow-xl transition-shadow border-2 border-rose-100 flex items-center justify-center group"
         title="Ver Mural de Afeto"
       >
         <MessageSquareHeart className="w-8 h-8 fill-rose-50" />

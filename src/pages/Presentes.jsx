@@ -4,15 +4,34 @@ import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 const Presentes = () => {
   const giftCategories = [
     {
-      title: 'Essenciais para o Nosso Lar',
-      icon: '🏡',
-      description: 'Itens práticos que vão construir o conforto do nosso dia a dia.',
+      title: 'Casa das Loiças',
+      icon: '🍽️',
+      description: 'Sugestões de itens para equipar a nossa cozinha e mesa.',
       items: [
-        { name: 'Utensílios de Cozinha', icon: '🍳' },
-        { name: 'Jogo de Cama & Banho', icon: '🛏️' },
-        { name: 'Eletrodomésticos Portáteis', icon: '🔌' },
-        { name: 'Contribuição para Mobília', icon: '🛋️' },
-        { name: 'Decoração Minimalista', icon: '✨' },
+        { name: 'Tostadeira', icon: '🥪' },
+        { name: 'Torreadeira', icon: '🍞' },
+        { name: 'Air-fryer', icon: '🍟' },
+        { name: 'Chaleira elétrica', icon: '🫖' },
+        { name: 'Dispensador de cereais', icon: '🥣' },
+        { name: 'Panelas com tampa de vidro', icon: '🥘' },
+        { name: 'Jogo de talheres', icon: '🍴' },
+        { name: 'Pratos de porcelana', icon: '🍽️' },
+        { name: 'Taças de vidro', icon: '🥂' },
+        { name: 'Chávenas', icon: '☕' },
+        { name: 'Varinha mágica', icon: '🪄' },
+        { name: 'Boleiro', icon: '🍰' },
+      ],
+    },
+    {
+      title: 'Loja da Hisense',
+      icon: '📺',
+      description: 'Complementos e aparelhos eletrónicos para o nosso lar.',
+      items: [
+        { name: 'Geleira', icon: '❄️' },
+        { name: 'Geladeira', icon: '🍦' },
+        { name: 'Micro-ondas', icon: '⏲️' },
+        { name: 'TV', icon: '📺' },
+        { name: 'AC', icon: '🌬️' },
       ],
     },
     {

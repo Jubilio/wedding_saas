@@ -11,6 +11,7 @@ import MessagesButton from './components/MessagesButton';
 import ScrollProgressIndicator from './components/ScrollProgressIndicator';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import ErrorBoundary from './components/ErrorBoundary';
+import MobileBottomNav from './components/MobileBottomNav';
 
 // Core Pages (always needed)
 import Splash from './pages/Splash';
@@ -139,6 +140,7 @@ const AppContent = () => {
         {!isSplash && location.pathname !== '/gestao-casamento-2026' && <Footer />}
         {!isSplash && <MusicPlayer />}
         {!isSplash && <MessagesButton />}
+        {!isSplash && <MobileBottomNav />}
       </div>
     </ErrorBoundary>
   );

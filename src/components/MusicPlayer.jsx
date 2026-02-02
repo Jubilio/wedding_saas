@@ -83,7 +83,7 @@ const MusicPlayer = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed md:bottom-4 bottom-20 right-4 z-40">
       <button
         onClick={togglePlay}
         className="bg-gold text-white p-3 rounded-full shadow-lg hover:bg-opacity-90 hover:scale-110 active:scale-90 transition-all flex items-center justify-center w-12 h-12"

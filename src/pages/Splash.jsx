@@ -114,7 +114,7 @@ const Splash = ({ isAutomatic = false }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
-        className="relative z-10 bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-16 max-w-2xl w-full"
+        className="relative z-10 bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-16 max-w-2xl w-full mx-auto"
         style={{
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
         }}
@@ -125,36 +125,36 @@ const Splash = ({ isAutomatic = false }) => {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-8 flex justify-center"
+            className="mb-6 md:mb-8 flex justify-center"
           >
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="text-gold">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="text-gold w-12 h-12 md:w-[60px] md:h-[60px]">
               <circle cx="20" cy="30" r="15" stroke="currentColor" strokeWidth="1.5" fill="none" />
               <circle cx="40" cy="30" r="15" stroke="currentColor" strokeWidth="1.5" fill="none" />
             </svg>
           </motion.div>
-
+          
           {/* Parents Block */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mb-10 text-neutral-gray/80"
+            className="mb-8 md:mb-10 text-neutral-gray/80"
           >
-            <p className="text-xs md:text-sm font-serif italic mb-6 tracking-wide">
+            <p className="text-[10px] md:text-sm font-serif italic mb-4 md:mb-6 tracking-wide">
               Com a Benção de Deus e de Seus Pais,
             </p>
             
-            <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-8">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-8">
               <div className="text-center">
-                <p className="text-sm md:text-base font-medium tracking-tight">Ana V. Ngovene</p>
-                <p className="text-sm md:text-base font-medium tracking-tight">Mário H. Buque</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">Ana V. Ngovene</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">Mário H. Buque</p>
               </div>
 
-              <span className="text-lg md:text-xl text-gold font-serif italic opacity-60 my-1 md:my-0">&</span>
+              <span className="text-base md:text-xl text-gold font-serif italic opacity-60 my-0.5 md:my-0">&</span>
 
               <div className="text-center">
-                <p className="text-sm md:text-base font-medium tracking-tight">Cezartina S. Sitoe</p>
-                <p className="text-sm md:text-base font-medium tracking-tight">Filiano J. Maússe</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">Cezartina S. Sitoe</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">Filiano J. Maússe</p>
               </div>
             </div>
           </motion.div>
@@ -164,17 +164,17 @@ const Splash = ({ isAutomatic = false }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mb-12"
+            className="mb-8 md:mb-12"
           >
-            <h1 className="text-5xl md:text-7xl font-serif text-neutral-gray mb-4">
+            <h1 className="text-4xl md:text-7xl font-serif text-neutral-gray mb-2 md:mb-4">
               Binth
             </h1>
-            <div className="flex items-center justify-center gap-4 my-6">
-              <div className="w-16 h-px bg-neutral-gray/30"></div>
-              <span className="text-2xl text-neutral-gray/50 font-light">&</span>
-              <div className="w-16 h-px bg-neutral-gray/30"></div>
+            <div className="flex items-center justify-center gap-3 md:gap-4 my-4 md:my-6">
+              <div className="w-12 md:w-16 h-px bg-neutral-gray/30"></div>
+              <span className="text-xl md:text-2xl text-neutral-gray/50 font-light">&</span>
+              <div className="w-12 md:w-16 h-px bg-neutral-gray/30"></div>
             </div>
-            <h1 className="text-5xl md:text-7xl font-serif text-neutral-gray">
+            <h1 className="text-4xl md:text-7xl font-serif text-neutral-gray">
               Jubílio
             </h1>
           </motion.div>
@@ -184,13 +184,13 @@ const Splash = ({ isAutomatic = false }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="mb-16"
+            className="mb-10 md:mb-16"
           >
-            <div className="w-px h-12 bg-neutral-gray/20 mx-auto mb-4"></div>
-            <p className="text-sm md:text-base tracking-[0.3em] text-neutral-gray/70 uppercase">
+            <div className="w-px h-8 md:h-12 bg-neutral-gray/20 mx-auto mb-3 md:mb-4"></div>
+            <p className="text-xs md:text-base tracking-[0.3em] text-neutral-gray/70 uppercase">
               07 • Março • 2026
             </p>
-            <div className="w-px h-12 bg-neutral-gray/20 mx-auto mt-4"></div>
+            <div className="w-px h-8 md:h-12 bg-neutral-gray/20 mx-auto mt-3 md:mb-4"></div>
           </motion.div>
 
           {/* Button with pulse animation or Countdown */}
@@ -203,7 +203,7 @@ const Splash = ({ isAutomatic = false }) => {
               }}
               transition={{ duration: 0.8, delay: 0.9 }}
               onClick={handleEnter}
-              className="relative bg-neutral-gray text-white px-12 py-4 rounded-full text-sm tracking-[0.2em] uppercase hover:bg-gold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="relative bg-neutral-gray text-white px-10 md:px-12 py-3 md:py-4 rounded-full text-xs md:text-sm tracking-[0.2em] uppercase hover:bg-gold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <motion.span
                 className="absolute inset-0 rounded-full bg-gold"
@@ -224,13 +224,13 @@ const Splash = ({ isAutomatic = false }) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.8 }}
-              className="flex flex-col items-center gap-4"
+              className="flex flex-col items-center gap-3 md:gap-4"
             >
-              <div className="flex items-center gap-3 text-gold">
-                <div className="animate-spin w-5 h-5 border-2 border-gold border-t-transparent rounded-full"></div>
-                <span className="text-xs tracking-[0.3em] uppercase font-bold">Carregando seu convite</span>
+              <div className="flex items-center gap-2 md:gap-3 text-gold">
+                <div className="animate-spin w-4 h-4 md:w-5 md:h-5 border-2 border-gold border-t-transparent rounded-full"></div>
+                <span className="text-[10px] md:text-xs tracking-[0.3em] uppercase font-bold">Carregando seu convite</span>
               </div>
-              <p className="text-[10px] text-neutral-gray/40 uppercase tracking-widest">
+              <p className="text-[9px] md:text-[10px] text-neutral-gray/40 uppercase tracking-widest">
                 Aguarde {countdown} segundos...
               </p>
             </motion.div>
