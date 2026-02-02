@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import weddingLogo from '../assets/wedding_icon/wedding_icon.png';
 
 const Splash = ({ isAutomatic = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -120,17 +121,18 @@ const Splash = ({ isAutomatic = false }) => {
         }}
       >
         <div className="text-center">
-          {/* Rings Icon */}
+          {/* Logo Icon */}
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="mb-6 md:mb-8 flex justify-center"
           >
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="text-gold w-12 h-12 md:w-[60px] md:h-[60px]">
-              <circle cx="20" cy="30" r="15" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              <circle cx="40" cy="30" r="15" stroke="currentColor" strokeWidth="1.5" fill="none" />
-            </svg>
+            <img 
+              src={weddingLogo} 
+              alt="B&J Logo" 
+              className="w-24 h-24 md:w-32 md:h-32 object-contain"
+            />
           </motion.div>
           
           {/* Parents Block */}

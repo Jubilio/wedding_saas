@@ -1,14 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-const src = "C:\\Users\\IMPACT - DBO\\.gemini\\antigravity\\brain\\054dae46-a043-4864-8c84-6ba562e0798c\\wedding_icon_192_1769891857554.png";
+// Using forward slashes to avoid escape issues
+const src = "C:/Users/IMPACT - DBO/.gemini/antigravity/brain/c6aff2b1-241d-45b6-ae7b-5879fb3d22cb/wedding_icon_512_1770044965286.png";
 const destDir = path.resolve(__dirname, 'public', 'icons');
 
 console.log('Source:', src);
 console.log('Dest Dir:', destDir);
 
 if (!fs.existsSync(src)) {
-    console.error('ERROR: Source file does not exist!');
+    console.error('ERROR: Source file does not exist at ' + src);
     process.exit(1);
 }
 
