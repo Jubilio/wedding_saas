@@ -141,6 +141,7 @@ const RSVPForm = ({ inviteData }) => {
           guests_count: formData.attending === 'yes' ? count : 0,
           phone: formData.phone,
           message: formData.message,
+          table_label: label // NEW: Track the reserved table from the invite
         }
       });
       

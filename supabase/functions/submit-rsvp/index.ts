@@ -21,7 +21,7 @@ serve(async (req) => {
     const payload = await req.json()
     console.log("Submit RSVP Payload received:", JSON.stringify(payload, null, 2))
     
-    const { invite_id, event_id, guest_name, attending, guests_count, phone, message } = payload
+    const { invite_id, event_id, guest_name, attending, guests_count, phone, message, table_label } = payload
 
     if (!invite_id) throw new Error('ID do convite ausente.')
     if (!guest_name) throw new Error('Nome do convidado ausente.')
@@ -30,7 +30,7 @@ serve(async (req) => {
     // 1. Buscar Convite e Regras
     const { data: invite, error: inviteError } = await supabase
       .from('invites')
-      .select('id, event_id, expires_at, max_guests')
+      .select('id, event_id, expires_at, max_guests, label')
       .eq('id', invite_id)
       .single()
 
@@ -50,7 +50,20 @@ serve(async (req) => {
       throw new Error(`O número de convidados (${finalGuestsCount}) excede o permitido (${invite.max_guests}).`)
     }
 
-    // 3. Inserir/Atualizar RSVP
+    // 3. Automate Table Provisioning (If label exists)
+    const effectiveTableLabel = table_label || invite.label;
+    if (attending && effectiveTableLabel) {
+      // Ensure the table exists in the seating chart catalog
+      await supabase
+        .from('tables')
+        .upsert({ 
+           event_id: invite.event_id || event_id, 
+           name: effectiveTableLabel, 
+           capacity: 10 
+        }, { onConflict: 'event_id,name' })
+    }
+
+    // 4. Inserir/Atualizar RSVP
     const rsvpData = {
       invite_id: invite.id,
       event_id: invite.event_id || event_id,
@@ -58,7 +71,8 @@ serve(async (req) => {
       attending: !!attending,
       guests_count: finalGuestsCount,
       phone: phone?.trim() || null,
-      message: message?.trim() || null
+      message: message?.trim() || null,
+      table_assignment: attending ? effectiveTableLabel : null // NEW: Auto-assign
     };
 
     console.log("RSVP data to upsert:", JSON.stringify(rsvpData));
