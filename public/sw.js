@@ -28,9 +28,12 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // OPTION PROFESSIONAL: Ignore Google Fonts in the SW to avoid CSP/fetch issues
-  // Let the browser handle these natively.
-  if (url.hostname.includes('fonts.gstatic.com') || url.hostname.includes('fonts.googleapis.com')) {
+  // Bypass SW for Supabase API and external tools
+  if (
+    url.hostname.includes('supabase.co') || 
+    url.hostname.includes('fonts.gstatic.com') || 
+    url.hostname.includes('fonts.googleapis.com')
+  ) {
     return;
   }
 
@@ -57,10 +60,10 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
 
-        // Return a clean No Content instead of crashing
-        return new Response('', {
-          status: 204,
-          statusText: 'No Content'
+        // If no cache, return a proper 404 response
+        return new Response('Network and cache failed', {
+          status: 404,
+          statusText: 'Not Found'
         });
       })
   );

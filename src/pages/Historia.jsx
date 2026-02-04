@@ -1,17 +1,48 @@
 import React from 'react';
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
+import { useEvent } from '../contexts/EventContext';
 import beachPhoto from '../assets/beach_smile.jpg';
 import DecorativeDivider from '../components/DecorativeDivider';
 
 const Historia = () => {
+  const { eventData } = useEvent();
+  
+  const brideName = eventData?.bride_name || 'Binth';
+  const groomName = eventData?.groom_name || 'Jubílio';
+
+  // Fallback story if none exists in DB
+  const defaultMilestones = [
+    {
+      year: '2021',
+      title: 'A Primeira Tentativa',
+      description: `Em 2021, ${groomName} fez a sua primeira tentativa de aproximação, usando como pretexto uma camisola emprestada. Uma estratégia tímida... Mas Deus já tinha o tempo certo preparado.`,
+      image: beachPhoto
+    },
+    {
+      year: '2022',
+      title: 'O Recomeço',
+      description: `Após uma vigília, ${groomName} voltou a falar com ${brideName}. Ele revelou seu coração, e em dezembro de 2022, ela sentiu que estava pronta para dizer "sim".`,
+      image: beachPhoto
+    },
+    {
+       year: eventData?.date ? new Date(eventData.date).getFullYear().toString() : '2026',
+       title: 'O Grande Dia',
+       description: 'Onde o "para sempre" começa oficialmente diante de Deus e dos homens.',
+       image: beachPhoto
+    }
+  ];
+
+  const storyMilestones = eventData?.story_json?.length > 0 
+    ? eventData.story_json 
+    : defaultMilestones;
+
   return (
-    <div className="pt-24 pb-20 bg-gradient-to-b from-white to-gray-50">
+    <div className="pt-24 pb-20 bg-gradient-to-b from-white to-gray-50 text-neutral-gray">
       <div className="container mx-auto px-4">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-5xl font-serif text-center text-neutral-gray mb-8"
+          className="text-4xl md:text-5xl font-serif text-center mb-8"
         >
           Nossa História
         </motion.h1>
@@ -30,146 +61,48 @@ const Historia = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            src={beachPhoto} 
-            alt="Binth e Jubílio"
-            className="rounded-2xl shadow-2xl max-h-96 object-cover"
+            src={eventData?.hero_image_url || beachPhoto} 
+            alt={`${brideName} e ${groomName}`}
+            className="rounded-3xl shadow-2xl max-h-[500px] w-full max-w-4xl object-cover"
           />
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-12">
           {/* Introduction */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-white p-8 rounded-2xl shadow-lg border-l-4 border-gold"
+            className="bg-white p-10 rounded-[2rem] shadow-xl border-l-8 border-gold relative overflow-hidden"
           >
-            <p className="text-gray-700 leading-relaxed text-lg">
-              Esta história começa no desejo de Jubílio, no desenho silencioso da mulher que ele sonhava ter ao seu lado, e em Deus, que com toda a Sua graça, confirmou esse sonho.
+            <p className="text-gray-700 leading-relaxed text-xl relative z-10">
+              Esta história começa no desejo de {groomName}, no desenho silencioso da mulher que ele sonhava ter ao seu lado, e em Deus, que com toda a Sua graça, confirmou esse sonho.
             </p>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full -mr-16 -mt-16" />
           </motion.div>
 
           <DecorativeDivider variant="hearts" />
 
-          {/* 2021 */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex gap-6 items-start"
-          >
-            <div className="flex-shrink-0 w-24 text-right">
-              <span className="text-5xl font-serif text-gold/30 font-bold">2021</span>
-            </div>
-            <div className="flex-1 bg-white p-6 rounded-xl shadow-md">
-              <h3 className="text-xl font-serif text-neutral-gray mb-3">A Primeira Tentativa</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Em 2021, Jubílio fez a sua primeira tentativa de aproximação, usando como pretexto uma camisola emprestada. Uma estratégia tímida, suave… e que não deu muito certo, já que Binth acabou apagando a plataforma onde conversavam. Mas Deus já tinha o tempo certo preparado.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* 2022 - August */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex gap-6 items-start flex-row-reverse"
-          >
-            <div className="flex-shrink-0 w-24 text-left">
-              <span className="text-5xl font-serif text-gold/30 font-bold">2022</span>
-            </div>
-            <div className="flex-1 bg-white p-6 rounded-xl shadow-md">
-              <h3 className="text-xl font-serif text-neutral-gray mb-3">O Recomeço</h3>
-              <p className="text-gray-600 leading-relaxed mb-3">
-                Em 2022, depois de uma vigília, Jubílio voltou a falar com Binth — desta vez insinuando que ela tinha o número dele, mas nunca escrevia. E foi assim que recomeçaram a conversar. Ali, ele começou a revelar com mais clareza o seu coração. Mas Binth ainda não estava pronta. Recusou duas vezes, esperando pelo momento certo.
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                Só em dezembro de 2022, após voltar de uma viagem em campo, sentiu que estava pronta para dizer "sim".
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Pull Quote */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="my-16 max-w-2xl mx-auto"
-          >
-            <blockquote className="relative py-8 px-12 bg-gradient-to-br from-gold/5 to-gold/10 rounded-2xl border-l-4 border-gold">
-              <svg className="absolute top-4 left-4 w-8 h-8 text-gold/30" fill="currentColor" viewBox="0 0 32 32">
-                <path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14h-6c0-2.2 1.8-4 4-4V8zm16 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-2.2 1.8-4 4-4V8z"/>
-              </svg>
-              <p className="text-xl md:text-2xl font-serif italic text-gray-700 text-center relative z-10">
-                "O amor não é apenas olhar um para o outro, mas olhar juntos na mesma direção."
-              </p>
-              <svg className="absolute bottom-4 right-4 w-8 h-8 text-gold/30 transform rotate-180" fill="currentColor" viewBox="0 0 32 32">
-                <path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14h-6c0-2.2 1.8-4 4-4V8zm16 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-2.2 1.8-4 4-4V8z"/>
-              </svg>
-            </blockquote>
-          </motion.div>
-
-          {/* 2023 */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex gap-6 items-start"
-          >
-            <div className="flex-shrink-0 w-24 text-right">
-              <span className="text-5xl font-serif text-gold/30 font-bold">2023</span>
-            </div>
-            <div className="flex-1 bg-white p-6 rounded-xl shadow-md">
-              <h3 className="text-xl font-serif text-neutral-gray mb-3">O Primeiro Encontro</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Em 2023 tiveram o primeiro encontro como namorados, no D'bambu — o lugar favorito de Jubílio, que naturalmente se tornou ainda mais especial desde aquele dia.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* 2024 */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex gap-6 items-start flex-row-reverse"
-          >
-            <div className="flex-shrink-0 w-24 text-left">
-              <span className="text-5xl font-serif text-gold/30 font-bold">2024</span>
-            </div>
-            <div className="flex-1 bg-white p-6 rounded-xl shadow-md">
-              <h3 className="text-xl font-serif text-neutral-gray mb-3">Distância que Fortaleceu</h3>
-              <p className="text-gray-600 leading-relaxed mb-3">
-                2024 chegou com distância geográfica, novos desafios e novos caminhos. Jubílio começou a trabalhar fora da província de Maputo, mas nenhum quilómetro conseguiu enfraquecer aquilo que estavam a construir. Pelo contrário: fortaleceu.
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                No dia 5 de dezembro de 2024, Jubílio em Pemba e Binth numa vigília, fizeram juntos o plano que mudaria as suas vidas — casar na mesma data no ano seguinte. Ao regressar em dezembro, Jubílio selou esse propósito com o anel de compromisso, marcando o início de uma nova etapa da caminhada.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* 2025-2026 */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex gap-6 items-start"
-          >
-            <div className="flex-shrink-0 w-24 text-right">
-              <span className="text-5xl font-serif text-gold/30 font-bold">2025</span>
-            </div>
-            <div className="flex-1 bg-white p-6 rounded-xl shadow-md">
-              <h3 className="text-xl font-serif text-neutral-gray mb-3">Rumo ao Grande Dia</h3>
-              <p className="text-gray-600 leading-relaxed mb-3">
-                2025 trouxe as famílias mais próximas, o pedido formal, o começo dos preparativos e a confirmação de que Deus estava — e sempre esteve — no centro de tudo.
-              </p>
-              <p className="leading-relaxed font-semibold text-gold">
-                E agora seguem firmes rumo ao grande dia: 07 de março de 2026.
-              </p>
-            </div>
-          </motion.div>
+          {storyMilestones.map((milestone, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className={`flex flex-col md:flex-row gap-8 items-center ${index % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}
+            >
+              <div className="md:w-1/3 text-center md:text-right">
+                <span className="text-6xl font-serif text-gold/20 font-black block leading-none">{milestone.year}</span>
+                <h3 className="text-2xl font-serif mt-2">{milestone.title}</h3>
+              </div>
+              
+              <div className="md:w-2/3 bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow border border-gray-100">
+                <p className="text-gray-600 leading-relaxed text-lg">
+                  {milestone.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
 
           <DecorativeDivider variant="rings" />
 
@@ -178,11 +111,13 @@ const Historia = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-gradient-to-r from-gold/10 to-gold/5 p-8 rounded-2xl text-center mt-12"
+            className="bg-gradient-to-br from-gold/20 via-gold/5 to-white p-12 rounded-[2.5rem] text-center mt-12 border border-gold/10 shadow-sm"
           >
-            <p className="text-xl font-serif text-neutral-gray italic leading-relaxed">
-              Uma história escrita com paciência, graça, encontros inesperados, segundos começos…<br />
-              E, acima de tudo, amor que amadureceu no tempo perfeito.
+            <p className="text-2xl font-serif italic leading-relaxed text-neutral-gray mb-4">
+              "Amor que amadureceu no tempo perfeito."
+            </p>
+            <p className="text-gold font-bold tracking-widest uppercase text-sm">
+                Rumo ao Casamento de {brideName} & {groomName}
             </p>
           </motion.div>
         </div>

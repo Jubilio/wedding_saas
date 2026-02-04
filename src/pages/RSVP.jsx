@@ -1,11 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import RSVPForm from '../components/RSVPForm';
+import { useEvent } from '../contexts/EventContext';
 
 const RSVP = () => {
   const navigate = useNavigate();
+  const { eventSlug } = useParams();
+  const { eventData: contextEventData } = useEvent();
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [inviteData, setInviteData] = React.useState(null);
@@ -18,31 +21,27 @@ const RSVP = () => {
       const token = params.get('token');
 
       if (!token) {
-        // Allows testing without token if we want, or block it. 
-        // Plan says: "O convidado acesse o link... Digite o seu nome"
-        // Strict security: Block if no token.
-        // For now, let's keep it strict but friendly.
-        setError('Token de convite não encontrado. Use o link enviado o seu convite.');
+        setError('Token de convite não encontrado. Use o link enviado no seu convite.');
         setLoading(false);
         return;
       }
 
       try {
         const { data, error } = await supabase.functions.invoke('get-invite', {
-          body: { token }
+          body: { token, eventSlug }
         });
 
         if (error || !data.valid) {
           throw new Error(data?.error || 'Convite inválido');
         }
 
-        // data now contains: valid, invite_id, label, max_guests, allow_plus_one, guests, existingRSVP
+        // data now contains: valid, invite_id, event_id, label, max_guests, allow_plus_one, guests, existingRSVP
         
         // Check for existing RSVP
         if (data.existingRSVP) {
            if (data.existingRSVP.attending) {
               // If already confirmed, go straight to ticket
-              navigate(`/ticket/${data.existingRSVP.id}`);
+              navigate(`/${eventSlug}/ticket/${data.existingRSVP.id}`);
               return;
            } else {
               // If declined, show message
@@ -54,14 +53,14 @@ const RSVP = () => {
         setInviteData(data);
       } catch (err) {
         console.error('Error fetching invite:', err);
-        setError('Convite inválido ou expirado.');
+        setError('Convite inválido ou expirado para este evento.');
       } finally {
         setLoading(false);
       }
     };
 
     validateToken();
-  }, []);
+  }, [eventSlug, navigate]);
 
   if (loading) {
      return (
@@ -82,10 +81,10 @@ const RSVP = () => {
           <div className="text-4xl mb-4 text-blue-500">💙</div>
           <h2 className="text-2xl font-serif text-blue-700 mb-2">Resposta Registrada</h2>
           <p className="text-gray-600 mb-6">
-            Você informou que não poderá comparecer. Agradecemos por nos avisar!
+            Você informou que não poderá comparecer ao casamento de {contextEventData?.title || 'nossos noivos'}. Agradecemos por nos avisar!
           </p>
           <button 
-            onClick={() => navigate('/home')}
+            onClick={() => navigate(`/${eventSlug}/home`)}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all"
           >
             Voltar ao Início
@@ -105,7 +104,7 @@ const RSVP = () => {
            <h1 className="text-3xl text-red-500 font-serif mb-4">Acesso Negado</h1>
            <p className="text-gray-600 mb-6">{error}</p>
            <button 
-             onClick={() => navigate('/home')}
+             onClick={() => navigate(`/${eventSlug}/home`)}
              className="text-gold font-semibold hover:underline"
            >
              Ir para a página inicial
@@ -132,7 +131,7 @@ const RSVP = () => {
           transition={{ delay: 0.2 }}
           className="text-center text-gray-600 mb-12 max-w-2xl mx-auto"
         >
-          Por favor, confirme sua presença até o dia 15 de fevereiro de 2026 para que possamos organizar tudo com muito carinho.
+          Por favor, confirme sua presença até o dia {contextEventData?.date ? new Date(new Date(contextEventData.date).getTime() - 20 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long' }) : '15 de fevereiro'} para que possamos organizar tudo com muito carinho.
         </motion.p>
 
         <motion.div

@@ -21,7 +21,7 @@ serve(async (req) => {
     const payload = await req.json()
     console.log("Submit RSVP Payload received:", JSON.stringify(payload, null, 2))
     
-    const { invite_id, guest_name, attending, guests_count, phone, message } = payload
+    const { invite_id, event_id, guest_name, attending, guests_count, phone, message } = payload
 
     if (!invite_id) throw new Error('ID do convite ausente.')
     if (!guest_name) throw new Error('Nome do convidado ausente.')
@@ -30,7 +30,7 @@ serve(async (req) => {
     // 1. Buscar Convite e Regras
     const { data: invite, error: inviteError } = await supabase
       .from('invites')
-      .select('id, expires_at, max_guests')
+      .select('id, event_id, expires_at, max_guests')
       .eq('id', invite_id)
       .single()
 
@@ -43,7 +43,7 @@ serve(async (req) => {
         throw new Error('Este convite expirou.')
     }
 
-    // 2. Validar Limite de Convidados (Camada extra de segurança antes do Trigger)
+    // 2. Validar Limite de Convidados
     const finalGuestsCount = attending === false ? 0 : (isNaN(parseInt(guests_count)) ? 1 : Math.max(1, parseInt(guests_count)));
     
     if (attending && finalGuestsCount > invite.max_guests) {
@@ -53,6 +53,7 @@ serve(async (req) => {
     // 3. Inserir/Atualizar RSVP
     const rsvpData = {
       invite_id: invite.id,
+      event_id: invite.event_id || event_id,
       guest_name: guest_name.trim(),
       attending: !!attending,
       guests_count: finalGuestsCount,
@@ -70,7 +71,6 @@ serve(async (req) => {
 
     if (rsvpError) {
       console.error("RSVP Upsert Error:", rsvpError)
-      // Se o erro vier do trigger de banco
       if (rsvpError.code === 'P0001') {
         throw new Error(rsvpError.message);
       }
@@ -79,45 +79,43 @@ serve(async (req) => {
 
     console.log("RSVP saved successfully:", rsvp.id)
 
-    // 4. Send Email Notification (Optional/Resend)
+    // 4. Send Email Notification (Optional)
     const resendKey = Deno.env.get('RESEND_API_KEY');
     if (resendKey) {
       try {
+        // Fetch event title for email
+        const { data: event } = await supabase.from('events').select('title').eq('id', rsvp.event_id).single();
+        const eventTitle = event?.title || 'Casamento';
+
         const emailContent = `
           <h2>Nova Confirmação de Presença! 💍</h2>
+          <p><strong>Evento:</strong> ${eventTitle}</p>
           <p><strong>Convidado:</strong> ${guest_name}</p>
           <p><strong>Presença:</strong> ${attending ? '✅ Sim, estarei presente' : '❌ Não poderei comparecer'}</p>
           ${attending ? `<p><strong>Acompanhantes:</strong> ${guests_count}</p>` : ''}
           ${phone ? `<p><strong>Telefone:</strong> ${phone}</p>` : ''}
           ${message ? `<p><strong>Mensagem:</strong> ${message}</p>` : ''}
-          <br>
-          <p>Veja todos os detalhes no <a href="https://binthjubilio.netlify.app/gestao-casamento-2026">Painel Administrativo</a>.</p>
         `;
 
-        const emailRes = await fetch('https://api.resend.com/emails', {
+        await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${resendKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Casamento Binth & Jubílio <onboarding@resend.dev>',
-            to: ['jubiliomausse5@gmail.com'],
+            from: `${eventTitle} <onboarding@resend.dev>`,
+            to: ['jubiliomausse5@gmail.com'], // In a real SaaS, this would be owner email
             subject: `RSVP: ${guest_name} - ${attending ? 'Confirmado' : 'Recusado'}`,
             html: emailContent,
           }),
         });
-
-        const emailData = await emailRes.json();
-        console.log("Email notification sent:", emailData);
       } catch (err) {
         console.error("Failed to send email notification:", err);
       }
-    } else {
-      console.log("RESEND_API_KEY not found. Skipping email notification.");
     }
 
-    // 5. Marcar convidados vinculados como respondidos (apenas se existirem na tabela guests)
+    // 5. Marcar convidados vinculados como respondidos
     await supabase
       .from('guests')
       .update({ status: 'responded' })

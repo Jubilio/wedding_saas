@@ -1,7 +1,14 @@
 import React from 'react';
-import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
+import { motion } from 'framer-motion';
+import { useEvent } from '../contexts/EventContext';
 
 const Presentes = () => {
+  const { eventData } = useEvent();
+  
+  const brideName = eventData?.bride_name || 'Binth';
+  const groomName = eventData?.groom_name || 'Jubílio';
+  const pixKey = eventData?.pix_key || 'jubilio.pix@email.com';
+
   const giftCategories = [
     {
       title: 'Casa das Loiças',
@@ -58,7 +65,6 @@ const Presentes = () => {
           Lista de Presentes
         </motion.h1>
 
-        {/* Opening Message */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -69,14 +75,13 @@ const Presentes = () => {
             A vossa presença será sempre o nosso maior presente.
           </p>
           <p className="text-gray-600 leading-relaxed mb-4">
-            Estamos a iniciar a nossa vida juntos com simplicidade, amor e propósito. Como neste momento residimos em Pemba e o nosso futuro lar será em Maputo, optámos por preparar uma lista leve, prática e pensada para acompanhar esta nova etapa da nossa família.
+            Estamos a iniciar a nossa vida juntos com simplicidade, amor e propósito. Optámos por preparar uma lista leve, prática e pensada para acompanhar esta nova etapa da nossa família.
           </p>
           <p className="text-gray-600 leading-relaxed">
             Esta lista existe apenas para quem desejar abençoar o nosso caminho. Cada gesto, grande ou pequeno, será recebido com gratidão e carinho.
           </p>
         </motion.div>
 
-        {/* Payment Methods (Moved to Top) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -97,16 +102,13 @@ const Presentes = () => {
               <h3 className="text-xl font-serif text-neutral-gray mb-4">Transferência Bancária</h3>
               <div className="space-y-4 text-gray-600 text-sm">
                 <div>
-                  <p className="font-bold text-xs uppercase tracking-wider text-gold mb-1">Conta Jubílio</p>
-                  <p><span className="font-bold">Banco:</span> Millennium BIM</p>
-                  <p><span className="font-bold">Titular:</span> Jubílio Maússe</p>
-                  <p><span className="font-bold">NIB:</span> 000100000040665901857</p>
+                  <p className="font-bold text-xs uppercase tracking-wider text-gold mb-1">Conta {groomName}</p>
+                  <p><span className="font-bold">Banco:</span> {eventData?.bank_name || 'Millennium BIM'}</p>
+                  <p><span className="font-bold">NIB:</span> {eventData?.bank_nib || '000100000040665901857'}</p>
                 </div>
                 <div className="pt-4 border-t border-gray-100">
-                  <p className="font-bold text-xs uppercase tracking-wider text-gold mb-1">Conta Binth</p>
-                  <p><span className="font-bold">Banco:</span> Millennium BIM</p>
-                  <p><span className="font-bold">Titular:</span> BINTH MARIO BUQUE</p>
-                  <p><span className="font-bold">NIB:</span> 000100000067862965557</p>
+                  <p className="font-bold text-xs uppercase tracking-wider text-gold mb-1">PIX / Chave Digital</p>
+                  <p><span className="font-bold">Chave:</span> {pixKey}</p>
                 </div>
               </div>
             </div>
@@ -115,16 +117,15 @@ const Presentes = () => {
               <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-red-600 font-bold text-2xl">M</span>
               </div>
-              <h3 className="text-xl font-serif text-neutral-gray mb-4">M-Pesa / E-Mola</h3>
+              <h3 className="text-xl font-serif text-neutral-gray mb-4">M-Pesa / Mobile Money</h3>
               <div className="space-y-2 text-gray-600">
-                <p><span className="font-bold">M-Pesa:</span> 84 577 9565 (Binth)</p>
-                <p><span className="font-bold">E-Mola:</span> 87 451 8769 (Jubílio)</p>
+                <p><span className="font-bold">Número:</span> {eventData?.mobile_money_number || '84 577 9565'}</p>
+                <p><span className="font-bold">Nome:</span> {brideName}</p>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Gift Categories */}
         <div className="max-w-6xl mx-auto space-y-12">
           {giftCategories.map((category, categoryIndex) => (
             <motion.div
@@ -164,7 +165,6 @@ const Presentes = () => {
           ))}
         </div>
 
-        {/* Closing Message */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

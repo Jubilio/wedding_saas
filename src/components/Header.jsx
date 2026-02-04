@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
+import { useEvent } from '../contexts/EventContext';
 
 const Header = () => {
+  const { eventSlug, eventData } = useEvent();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [easterEggClicks, setEasterEggClicks] = useState(0);
@@ -34,12 +36,12 @@ const Header = () => {
   const closeMenu = () => setIsOpen(false);
 
   const links = [
-    { name: 'Home', path: '/home' },
-    { name: 'Nossa História', path: '/historia' },
-    { name: 'O Evento', path: '/evento' },
-    { name: 'Galeria', path: '/galeria' },
-    { name: 'Lista de Presentes', path: '/presentes' },
-    { name: 'Contato', path: '/contato' },
+    { name: 'Home', path: `/${eventSlug}/home` },
+    { name: 'Nossa História', path: `/${eventSlug}/historia` },
+    { name: 'O Evento', path: `/${eventSlug}/evento` },
+    { name: 'Galeria', path: `/${eventSlug}/galeria` },
+    { name: 'Lista de Presentes', path: `/${eventSlug}/presentes` },
+    { name: 'Contato', path: `/${eventSlug}/contato` },
   ];
 
   return (
@@ -58,11 +60,11 @@ const Header = () => {
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link 
-              to="/home"
+              to={`/${eventSlug}/home`}
               onClick={handleLogoClick}
               className="text-2xl font-serif font-bold text-neutral-gray"
             >
-              B & J
+              {eventData?.title.split(' ').map(w => w[0]).join(' & ') || 'B & J'}
             </Link>
 
             {/* Desktop Menu */}
@@ -128,7 +130,7 @@ const Header = () => {
               Mal podemos esperar para celebrar consigo!
             </p>
             <p className="text-white text-center font-serif text-lg mt-4">
-              - Binth & Jubílio ♥
+              - {eventData?.title || 'Binth & Jubílio'} ♥
             </p>
           </div>
         </div>

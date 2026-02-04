@@ -1,9 +1,8 @@
 import React, { useMemo } from 'react';
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
+import { useEvent } from '../contexts/EventContext';
 
-
-// Import images
+// Import images for fallback
 import beachKiss from '../assets/beach_kiss.jpg';
 import beachHug from '../assets/beach_hug.jpg';
 import beachHoldHands from '../assets/beach_hold_hands.jpg';
@@ -12,14 +11,23 @@ import groomBench from '../assets/groom_bench.jpg';
 import brideBench from '../assets/bride_bench.jpg';
 
 const Gallery = () => {
-  const images = useMemo(() => [
-    { src: beachSmile, alt: 'Nós (Praia)', span: 'md:col-span-2 md:row-span-2' },
-    { src: beachKiss, alt: 'O Beijo', span: 'md:col-span-1 md:row-span-1' },
-    { src: beachHoldHands, alt: 'Juntos', span: 'md:col-span-1 md:row-span-1' },
-    { src: beachHug, alt: 'Abraço', span: 'md:col-span-1 md:row-span-2' },
-    { src: groomBench, alt: 'O Noivo', span: 'md:col-span-1 md:row-span-1' },
-    { src: brideBench, alt: 'A Noiva', span: 'md:col-span-1 md:row-span-1' },
-  ], []);
+  const { eventData } = useEvent();
+
+  const images = useMemo(() => {
+    if (eventData?.gallery_json?.length > 0) {
+      return eventData.gallery_json;
+    }
+
+    // Default Fallback
+    return [
+      { src: beachSmile, alt: 'Nós (Praia)', span: 'md:col-span-2 md:row-span-2' },
+      { src: beachKiss, alt: 'O Beijo', span: 'md:col-span-1 md:row-span-1' },
+      { src: beachHoldHands, alt: 'Juntos', span: 'md:col-span-1 md:row-span-1' },
+      { src: beachHug, alt: 'Abraço', span: 'md:col-span-1 md:row-span-2' },
+      { src: groomBench, alt: 'O Noivo', span: 'md:col-span-1 md:row-span-1' },
+      { src: brideBench, alt: 'A Noiva', span: 'md:col-span-1 md:row-span-1' },
+    ];
+  }, [eventData]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
@@ -33,7 +41,7 @@ const Gallery = () => {
             duration: 0.8,
             ease: [0.22, 1, 0.36, 1]
           }}
-          className={`relative overflow-hidden rounded-2xl shadow-xl group ${image.span}`}
+          className={`relative overflow-hidden rounded-2xl shadow-xl group ${image.span || 'md:col-span-1 md:row-span-1'}`}
         >
           {/* Image with Ken Burns effect on hover */}
           <img

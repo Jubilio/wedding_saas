@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { 
   Users, 
   User, 
@@ -7,17 +6,13 @@ import {
   X, 
   LogOut, 
   RefreshCw, 
-  Plus, 
-  Trash2, 
-  Edit2, 
   MessageSquare,
   Search,
-  Share2,
-  AlertTriangle,
   Download,
-  Filter,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Layout
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase, onAuthStateChange, signOut } from '../lib/supabase';
 import AdminLogin from '../components/AdminLogin';
@@ -27,30 +22,34 @@ import SeatingChart from '../components/SeatingChart';
 import TicketsGallery from '../components/TicketsGallery';
 import MessagesManagement from '../components/MessagesManagement';
 import ConfirmModal from '../components/ConfirmModal';
+import StoryManagement from '../components/StoryManagement';
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [invites, setInvites] = useState([]);
-  /* eslint-disable no-unused-vars */
-  const [isLoadingInvites, setIsLoadingInvites] = useState(false);
   
-  const [searchTerm, setSearchTerm] = useState('');
-  /* eslint-enable no-unused-vars */
+  // Multi-tenant states
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  
+  const [invites, setInvites] = useState([]);
   const [rsvps, setRSVPs] = useState([]);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams] = useSearchParams();
+  const slugParam = searchParams.get('slug');
+  const tabParam = searchParams.get('tab');
+  
+  const [activeTab, setActiveTab] = useState(tabParam || 'overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   // RSVP Filters
   const [rsvpSearchTerm, setRsvpSearchTerm] = useState('');
-  const [rsvpStatusFilter, setRsvpStatusFilter] = useState('all'); // 'all', 'confirmed', 'declined'
-  const [rsvpTableFilter, setRsvpTableFilter] = useState('all');
+  const [rsvpStatusFilter, setRsvpStatusFilter] = useState('all');
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingInvite, setEditingInvite] = useState(null);
   
-  // Custom Confirm Modal state
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -60,37 +59,8 @@ const AdminDashboard = () => {
     isDangerous: false
   });
 
-  // Check authentication state
-  useEffect(() => {
-    const { data: { subscription } } = onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session?.user);
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Load data after authentication
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchData();
-    }
-    // eslint-disable-next-line
-  }, [isAuthenticated]);
-
-  const fetchData = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([fetchRSVPs(), fetchInvites()]);
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const fetchRSVPs = async () => {
-    // Join with invites to get Label
+  const fetchRSVPs = React.useCallback(async () => {
+    if (!selectedEvent?.id) return;
     const { data, error } = await supabase
       .from('rsvps')
       .select(`
@@ -98,6 +68,7 @@ const AdminDashboard = () => {
         table_assignment,
         invites ( label, token )
       `)
+      .eq('event_id', selectedEvent.id)
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -105,7 +76,6 @@ const AdminDashboard = () => {
       return;
     }
     
-    // Flatten data for easier display
     const flattened = data.map(r => ({
       ...r,
       guestName: r.guest_name || 'Desconhecido',
@@ -115,26 +85,88 @@ const AdminDashboard = () => {
     }));
     
     setRSVPs(flattened);
-  };
+  }, [selectedEvent?.id]);
 
-  const fetchInvites = async () => {
-    setIsLoadingInvites(true);
+  const fetchInvites = React.useCallback(async () => {
+    if (!selectedEvent?.id) return;
     const { data, error } = await supabase
       .from('invites')
       .select(`
         *,
         guests (*)
       `)
+      .eq('event_id', selectedEvent.id)
       .order('created_at', { ascending: false });
     
     if (error) {
       console.error("Error fetching invites:", error);
     } else {
-      setInvites(data);
+      setInvites(data || []);
     }
-    setIsLoadingInvites(false);
-  };
+  }, [selectedEvent?.id]);
 
+  const fetchEvents = React.useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setEvents(data || []);
+      if (data?.length > 0) {
+        // If slug param exists, try to find that specific event
+        if (slugParam) {
+           const found = data.find(ev => ev.slug === slugParam);
+           if (found) {
+             setSelectedEvent(found);
+           } else {
+             setSelectedEvent(data[0]);
+           }
+        } else if (!selectedEvent) {
+          setSelectedEvent(data[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast.error("Erro ao carregar eventos.");
+    }
+  }, [selectedEvent, slugParam]);
+
+  const fetchData = React.useCallback(async () => {
+    if (!selectedEvent) return;
+    setIsRefreshing(true);
+    try {
+      await Promise.all([fetchRSVPs(), fetchInvites()]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [selectedEvent, fetchRSVPs, fetchInvites]);
+
+  // Effects
+  useEffect(() => {
+    const { data: { subscription } } = onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session?.user);
+      setUser(session?.user || null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchEvents();
+    }
+  }, [isAuthenticated, user, fetchEvents]);
+
+  useEffect(() => {
+    if (selectedEvent) {
+      fetchData();
+    }
+  }, [selectedEvent, fetchData]);
 
   const handleOpenAddModal = () => {
     setEditingInvite(null);
@@ -147,12 +179,12 @@ const AdminDashboard = () => {
   };
 
   const handleSaveInvite = async (formData) => {
+    if (!selectedEvent) return;
     setIsLoading(true);
     try {
       let inviteId = editingInvite?.id;
 
       if (editingInvite) {
-        // Update invite
         const { error } = await supabase
           .from('invites')
           .update({ 
@@ -163,18 +195,17 @@ const AdminDashboard = () => {
           .eq('id', inviteId);
         if (error) throw error;
       } else {
-        // Create new invite
         const token = Math.random().toString(36).substring(2, 10).toUpperCase();
 
         const { data, error } = await supabase
           .from('invites')
           .insert([{
+            event_id: selectedEvent.id,
             token,
             label: formData.label,
             max_guests: formData.max_guests,
             allow_plus_one: formData.allow_plus_one,
-            event: 'Casamento Binth & Jubilio',
-            expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // +90 days
+            expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
           }])
           .select()
           .single();
@@ -184,21 +215,6 @@ const AdminDashboard = () => {
       }
 
       // Sync Guests
-      // Strategy: Delete all existing guests for this invite (if update) and re-insert?
-      // Or smarter diff? 
-      // For simplicity in this admin tool: 
-      // 1. Get existing IDs? 
-      // Let's go simple: 
-      // If editing, we might lose RSVP links if we delete guests! 
-      // CRITICAL: Cannot just delete guests if they have RSVPs.
-      
-      // Better strategy:
-      // We only ADD new guests or specific Remove.
-      // The modal currently sends a full list. 
-      // Let's try to just ADD new ones and nothing else for now to be safe?
-      // Or if the user removed one in the UI, we try to delete it.
-
-      // Sync Guests (Optional now for robust logic, but kept for autocomplete)
       if (editingInvite) {
           const newNames = formData.guests.map(g => g.name);
           const toDelete = (editingInvite.guests || []).filter(g => !newNames.includes(g.name));
@@ -211,15 +227,15 @@ const AdminDashboard = () => {
           if (editingInvite) {
               const existing = (editingInvite.guests || []).find(g => g.name === guest.name);
               if (!existing) {
-                  await supabase.from('guests').insert([{ invite_id: inviteId, name: guest.name, type: 'principal' }]);
+                  await supabase.from('guests').insert([{ event_id: selectedEvent.id, invite_id: inviteId, name: guest.name, type: 'principal' }]);
               }
           } else {
-              await supabase.from('guests').insert([{ invite_id: inviteId, name: guest.name, type: 'principal' }]);
+              await supabase.from('guests').insert([{ event_id: selectedEvent.id, invite_id: inviteId, name: guest.name, type: 'principal' }]);
           }
       }
 
       setIsModalOpen(false);
-      fetchData(); // Refresh all
+      fetchData();
     } catch (error) {
       console.error("Error saving invite:", error);
       toast.error("Erro ao salvar convite: " + error.message);
@@ -241,7 +257,6 @@ const AdminDashboard = () => {
           const { error } = await supabase.from('invites').delete().eq('id', inviteId);
           if (error) throw error;
           toast.success("Convite excluído com sucesso.");
-          // Update local state to immediately hide from UI
           setInvites(prev => prev.filter(inv => inv.id !== inviteId));
           setRSVPs(prev => prev.filter(r => r.invite_id !== inviteId));
         } catch (error) {
@@ -274,52 +289,23 @@ const AdminDashboard = () => {
 
 
   const copyLink = (token) => {
-      const url = `${window.location.origin}/rsvp?token=${token}`;
+      const url = `${window.location.origin}/${selectedEvent.slug}/rsvp?token=${token}`;
       navigator.clipboard.writeText(url);
+      toast.success("Link copiado!");
   };
 
   const sendWhatsApp = (invite) => {
-    // Use production URL for sharing
-    const baseUrl = `https://binthjubilio.netlify.app/rsvp?token=${invite.token}`;
-    
-    // Get guest names or label
+    const baseUrl = `${window.location.origin}/${selectedEvent.slug}/rsvp?token=${invite.token}`;
     const guestsNames = invite.guests && invite.guests.length > 0 
       ? invite.guests.map(g => g.name).join(' & ') 
       : (invite.label || 'Convidado');
 
-    const message = `Olá ${guestsNames}! 💕\n\nPreparamos com muito carinho um convite especial para o nosso casamento.\n\n👉 Para acessar o convite e confirmar sua presença, é só clicar no link abaixo:\n${baseUrl}\n\n🔎 Importante: ao entrar no sistema, procure pelo seu primeiro nome ou apelido (como costuma ser chamada).\n\nSe tiver qualquer dificuldade, é só nos avisar — teremos prazer em ajudar! 💬\n\nFicaremos muito felizes com a sua presença! 💖✨`;
-    
-    const encodedMessage = encodeURIComponent(message);
-    
-    // Check if mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    if (isMobile) {
-        window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
-    } else {
-        window.open(`https://web.whatsapp.com/send?text=${encodedMessage}`, '_blank');
-    }
-  };
-
-  const sendReminderWhatsApp = (invite) => {
-    const baseUrl = `https://binthjubilio.netlify.app/rsvp?token=${invite.token}`;
-    const guestsNames = invite.guests && invite.guests.length > 0 
-      ? invite.guests.map(g => g.name).join(' & ') 
-      : (invite.label || 'Convidado');
-
-    const message = `Olá ${guestsNames}! 💕\n\nPassando para lembrar com carinho do nosso convite de casamento. 💍\n\nAinda não conseguimos confirmar sua presença no sistema. Conseguiria nos dar um retorno assim que puder?\n\n👉 Link para confirmar:\n${baseUrl}\n\nFicaremos muito felizes em ter você conosco! 💖`;
-    
+    const message = `Olá ${guestsNames}! 💕\n\nPreparamos com muito carinho um convite especial para o nosso casamento.\n\n👉 Para acessar o convite e confirmar sua presença, é só clicar no link abaixo:\n${baseUrl}\n\nFicaremos muito felizes com a sua presença! 💖✨`;
     const encodedMessage = encodeURIComponent(message);
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    if (isMobile) {
-        window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
-    } else {
-        window.open(`https://web.whatsapp.com/send?text=${encodedMessage}`, '_blank');
-    }
+    window.open(`https://${isMobile ? 'api' : 'web'}.whatsapp.com/send?text=${encodedMessage}`, '_blank');
   };
 
-  // If loading, show spinner
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -328,7 +314,6 @@ const AdminDashboard = () => {
     );
   }
 
-  // If not authenticated, show login
   if (!isAuthenticated) {
     return <AdminLogin onLogin={setIsAuthenticated} />;
   }
@@ -343,8 +328,19 @@ const AdminDashboard = () => {
                 <Users className="text-white w-8 h-8" />
              </div>
              <div>
-                <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Gestão de Convites</h1>
-                <p className="text-gray-500 font-medium">Controle de acesso do casamento</p>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Gestão de Convites</h1>
+                  {events.length > 1 && (
+                    <select 
+                      value={selectedEvent?.id} 
+                      onChange={(e) => setSelectedEvent(events.find(ev => ev.id === e.target.value))}
+                      className="ml-4 bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-gold focus:border-gold block p-2"
+                    >
+                      {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+                    </select>
+                  )}
+                </div>
+                <p className="text-gray-500 font-medium">{selectedEvent?.title || 'Controle de acesso'}</p>
              </div>
           </div>
           
@@ -367,7 +363,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Statistics Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6 border-b-4 border-purple-500 transition-transform hover:-translate-y-1">
             <div className="flex items-center justify-between mb-4">
@@ -414,149 +410,56 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6 border-b border-gray-200">
-           <button
-            onClick={() => setActiveTab('overview')}
-            className={`pb-4 px-4 font-semibold transition-colors border-b-2 ${
-              activeTab === 'overview' ? 'border-gold text-gold' : 'border-transparent text-gray-500'
-            }`}
-          >
-            Convites & Tokens
-          </button>
-          <button
-            onClick={() => setActiveTab('rsvps')}
-            className={`pb-4 px-4 font-semibold transition-colors border-b-2 ${
-              activeTab === 'rsvps' ? 'border-gold text-gold' : 'border-transparent text-gray-500'
-            }`}
-          >
-            Confirmações (RSVPs)
-          </button>
-          <button
-            onClick={() => setActiveTab('management')}
-            className={`pb-4 px-4 font-semibold transition-colors border-b-2 ${
-              activeTab === 'management' ? 'border-gold text-gold' : 'border-transparent text-gray-500'
-            }`}
-          >
-            Gestão de Mesas
-          </button>
-          <button
-            onClick={() => setActiveTab('seating')}
-            className={`pb-4 px-4 font-semibold transition-colors border-b-2 ${
-              activeTab === 'seating' ? 'border-gold text-gold' : 'border-transparent text-gray-500'
-            }`}
-          >
-            Mapa de Assentos
-          </button>
-          <button
-            onClick={() => setActiveTab('tickets')}
-            className={`pb-4 px-4 font-semibold transition-colors border-b-2 ${
-              activeTab === 'tickets' ? 'border-gold text-gold' : 'border-transparent text-gray-500'
-            }`}
-          >
-            Galeria de Tickets
-          </button>
-          <button
-            onClick={() => setActiveTab('messages')}
-            className={`pb-4 px-4 font-semibold transition-colors border-b-2 ${
-              activeTab === 'messages' ? 'border-gold text-gold' : 'border-transparent text-gray-500'
-            }`}
-          >
-            Mural de Mensagens
-          </button>
+        <div className="flex flex-wrap gap-4 mb-6 border-b border-gray-200">
+           {['overview', 'rsvps', 'content', 'management', 'seating', 'tickets', 'messages'].map(tab => (
+             <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-4 px-4 font-semibold transition-colors border-b-2 capitalize ${
+                activeTab === tab ? 'border-gold text-gold' : 'border-transparent text-gray-500'
+              }`}
+            >
+              {tab === 'overview' ? 'Convites' : tab === 'content' ? 'Conteúdo' : tab === 'management' ? 'Gestão de Mesas' : tab === 'seating' ? 'Mapa de Assentos' : tab === 'tickets' ? 'Galeria' : tab === 'messages' ? 'Mensagens' : 'RSVPs'}
+            </button>
+           ))}
         </div>
 
-        {/* --- INVITES TAB --- */}
+        {/* --- TABS CONTENT --- */}
         {activeTab === 'overview' && (
             <div className="space-y-6">
                 <div className="bg-white rounded-2xl shadow-lg p-6">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-gray-800">Convites Enviados</h2>
-                        <button
-                            onClick={handleOpenAddModal}
-                            className="bg-gold text-white px-4 py-2 rounded-lg hover:bg-opacity-90 font-bold shadow-md"
-                        >
-                            + Criar Novo Convite
+                        <h2 className="text-xl font-bold text-gray-800">Lista de Convites</h2>
+                        <button onClick={handleOpenAddModal} className="bg-gold text-white px-4 py-2 rounded-lg hover:bg-opacity-90 font-bold shadow-md">
+                            + Novo Convite
                         </button>
                     </div>
-
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 text-gray-700">
                                 <tr>
                                     <th className="px-6 py-3">Mesa Reservada</th>
                                     <th className="px-6 py-3">Token</th>
-                                    <th className="px-6 py-3">Convidados (Dicas)</th>
+                                    <th className="px-6 py-3">Convidados</th>
                                     <th className="px-6 py-3 text-center">Limite</th>
-                                    <th className="px-6 py-3">Status</th>
-                                    <th className="px-6 py-3">Ações</th>
+                                    <th className="px-6 py-3 text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {invites.map(invite => (
                                     <tr key={invite.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 font-medium">{invite.label || 'Sem nome'}</td>
-                                        <td className="px-6 py-4 font-mono text-sm bg-gray-50 p-2 rounded w-min whitespace-nowrap">
-                                            {invite.token}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">
-                                            {(invite.guests || []).map(g => g.name).join(', ')}
-                                        </td>
-                                        <td className="px-6 py-4 text-center font-bold text-gold">
-                                            {invite.max_guests}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {/* Status logic simplified: Check if there's any RSVP for this invite */}
-                                            {rsvps.some(r => r.invite_id === invite.id) ? (
-                                                <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-1 rounded-full">Respondido</span>
-                                            ) : (
-                                                <span className="text-xs font-semibold bg-gray-100 text-gray-500 px-2 py-1 rounded-full">Pendente</span>
-                                            )}
-                                        </td>
-                                         <td className="px-6 py-4 flex gap-3 items-center">
-                                            <button 
-                                                onClick={() => copyLink(invite.token)}
-                                                className="text-blue-600 hover:text-blue-800 font-semibold text-sm flex items-center gap-1"
-                                                title="Copiar Link"
-                                            >
-                                                🔗 Copiar
-                                            </button>
-                                            <button 
-                                                onClick={() => sendWhatsApp(invite)}
-                                                className="text-green-600 hover:text-green-800 font-semibold text-sm flex items-center gap-1"
-                                                title="Enviar Convite"
-                                            >
-                                                💬 Convite
-                                            </button>
-                                            { !rsvps.some(r => r.invite_id === invite.id) && (
-                                                <button 
-                                                    onClick={() => sendReminderWhatsApp(invite)}
-                                                    className="text-orange-600 hover:text-orange-800 font-semibold text-sm flex items-center gap-1"
-                                                    title="Enviar Lembrete"
-                                                >
-                                                    🔔 Lembrete
-                                                </button>
-                                            )}
-                                             <button 
-                                                onClick={() => handleOpenEditModal(invite)}
-                                                className="text-gray-400 hover:text-gold transition-colors"
-                                                title="Editar"
-                                            >
-                                                ✏️
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDeleteInvite(invite.id)}
-                                                className="text-gray-400 hover:text-red-500 transition-colors"
-                                                title="Excluir"
-                                            >
-                                                🗑️
-                                            </button>
+                                        <td className="px-6 py-4 font-mono text-sm">{invite.token}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{(invite.guests || []).map(g => g.name).join(', ')}</td>
+                                        <td className="px-6 py-4 text-center font-bold text-gold">{invite.max_guests}</td>
+                                        <td className="px-6 py-4 flex gap-3 justify-center">
+                                            <button onClick={() => copyLink(invite.token)} className="text-blue-600 hover:underline text-sm">🔗 Copiar</button>
+                                            <button onClick={() => sendWhatsApp(invite)} className="text-green-600 hover:underline text-sm">💬 Zap</button>
+                                            <button onClick={() => handleOpenEditModal(invite)} className="text-gray-400 hover:text-gold">✏️</button>
+                                            <button onClick={() => handleDeleteInvite(invite.id)} className="text-gray-400 hover:text-red-500">🗑️</button>
                                         </td>
                                     </tr>
                                 ))}
-                                {invites.length === 0 && (
-                                    <tr><td colSpan="5" className="px-6 py-8 text-center text-gray-400">Nenhum convite criado.</td></tr>
-                                )}
                             </tbody>
                         </table>
                     </div>
@@ -567,212 +470,52 @@ const AdminDashboard = () => {
         {/* --- RSVPS TAB --- */}
         {activeTab === 'rsvps' && (
              <div className="space-y-6">
-               {/* Filters Bar */}
-               <div className="bg-white rounded-2xl shadow-lg p-6">
-                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                   <div className="flex flex-col md:flex-row gap-4 flex-1 w-full">
-                     {/* Search */}
-                     <div className="relative flex-1">
-                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                       <input
-                         type="text"
-                         placeholder="Buscar por nome..."
-                         value={rsvpSearchTerm}
-                         onChange={(e) => setRsvpSearchTerm(e.target.value)}
-                         className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:border-gold focus:outline-none"
-                       />
-                     </div>
-                     {/* Status Filter */}
-                     <select
-                       value={rsvpStatusFilter}
-                       onChange={(e) => setRsvpStatusFilter(e.target.value)}
-                       className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-gold focus:outline-none bg-white"
-                     >
-                       <option value="all">Todos os Status</option>
-                       <option value="confirmed">Confirmados</option>
-                       <option value="declined">Recusados</option>
-                     </select>
-                     {/* Table Filter */}
-                     <select
-                       value={rsvpTableFilter}
-                       onChange={(e) => setRsvpTableFilter(e.target.value)}
-                       className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-gold focus:outline-none bg-white"
-                     >
-                       <option value="all">Todas as Mesas</option>
-                       {[...new Set(rsvps.map(r => r.tableAssignment).filter(Boolean))].map(table => (
-                         <option key={table} value={table}>{table}</option>
-                       ))}
-                     </select>
-                   </div>
-                   {/* Export Button */}
-                   <button
-                     onClick={() => {
-                       const filteredData = rsvps
-                         .filter(r => {
-                           const matchesSearch = r.guestName.toLowerCase().includes(rsvpSearchTerm.toLowerCase());
-                           const matchesStatus = rsvpStatusFilter === 'all' || 
-                             (rsvpStatusFilter === 'confirmed' && r.attending) || 
-                             (rsvpStatusFilter === 'declined' && !r.attending);
-                           const matchesTable = rsvpTableFilter === 'all' || r.tableAssignment === rsvpTableFilter;
-                           return matchesSearch && matchesStatus && matchesTable;
-                         })
-                         .map(r => ({
-                           Nome: r.guestName,
-                           Convite: r.inviteLabel || 'Sem Mesa',
-                           Presenca: r.attending ? 'Sim' : 'Não',
-                           Quantidade: r.guests_count,
-                           Telefone: r.phone || '',
-                           Mesa: r.tableAssignment || 'Não atribuída',
-                           Mensagem: r.message || '',
-                           Data: new Date(r.created_at).toLocaleDateString('pt-BR')
-                         }));
-                       
-                       // Generate CSV
-                       const headers = Object.keys(filteredData[0] || {}).join(',');
-                       const rows = filteredData.map(row => Object.values(row).map(v => `"${v}"`).join(',')).join('\n');
-                       const csv = `${headers}\n${rows}`;
-                       
-                       // Download
-                       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                       const url = URL.createObjectURL(blob);
-                       const link = document.createElement('a');
-                       link.href = url;
-                       link.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
-                       document.body.appendChild(link);
-                       link.click();
-                       document.body.removeChild(link);
-                       URL.revokeObjectURL(url);
-                       toast.success('Lista exportada com sucesso!');
-                     }}
-                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium whitespace-nowrap"
-                   >
-                     <Download className="w-4 h-4" />
-                     Exportar Excel
-                   </button>
-                 </div>
-               </div>
-
-               {/* RSVP Table */}
-               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-6">Lista de Confirmações</h2>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 text-gray-700">
-                            <tr>
-                                <th className="px-6 py-3">Nome Principal</th>
-                                <th className="px-6 py-3">Convite Origem</th>
-                                <th className="px-6 py-3">Presença</th>
-                                <th className="px-6 py-3">Qtd</th>
-                                <th className="px-6 py-3">Telefone</th>
-                                <th className="px-6 py-3">Mesa</th>
-                                <th className="px-6 py-3">Ticket</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {rsvps
-                              .filter(r => {
-                                const matchesSearch = r.guestName.toLowerCase().includes(rsvpSearchTerm.toLowerCase());
-                                const matchesStatus = rsvpStatusFilter === 'all' || 
-                                  (rsvpStatusFilter === 'confirmed' && r.attending) || 
-                                  (rsvpStatusFilter === 'declined' && !r.attending);
-                                const matchesTable = rsvpTableFilter === 'all' || r.tableAssignment === rsvpTableFilter;
-                                return matchesSearch && matchesStatus && matchesTable;
-                              })
-                              .map(rsvp => (
-                                <tr key={rsvp.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium">{rsvp.guestName}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">{rsvp.inviteLabel || 'Sem Mesa'}</td>
-                                    <td className="px-6 py-4">
-                                         <span
-                                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                                              rsvp.attending
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-red-100 text-red-700'
-                                            }`}
-                                          >
-                                            {rsvp.attending ? 'Sim' : 'Não'}
-                                          </span>
-                                    </td>
-                                    <td className="px-6 py-4">{rsvp.guests_count}</td>
-                                    <td className="px-6 py-4 text-sm font-mono">{rsvp.phone}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{rsvp.tableAssignment || '-'}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                          <a 
-                                              href={`/ticket/${rsvp.id}`}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="text-blue-500 hover:text-blue-700 font-semibold text-sm flex items-center gap-1"
-                                              title="Ver ticket"
-                                          >
-                                             🎫
-                                          </a>
-                                          <button
-                                            onClick={() => {
-                                              navigator.clipboard.writeText(`${window.location.origin}/ticket/${rsvp.id}`);
-                                              toast.success('Link do ticket copiado!');
-                                            }}
-                                            className="text-gray-400 hover:text-gold"
-                                            title="Copiar link do ticket"
-                                          >
-                                            <LinkIcon className="w-4 h-4" />
-                                          </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                             {rsvps.filter(r => {
-                               const matchesSearch = r.guestName.toLowerCase().includes(rsvpSearchTerm.toLowerCase());
-                               const matchesStatus = rsvpStatusFilter === 'all' || 
-                                 (rsvpStatusFilter === 'confirmed' && r.attending) || 
-                                 (rsvpStatusFilter === 'declined' && !r.attending);
-                               const matchesTable = rsvpTableFilter === 'all' || r.tableAssignment === rsvpTableFilter;
-                               return matchesSearch && matchesStatus && matchesTable;
-                             }).length === 0 && (
-                                <tr><td colSpan="7" className="px-6 py-8 text-center text-gray-400">Nenhuma resposta encontrada.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input type="text" placeholder="Buscar..." value={rsvpSearchTerm} onChange={(e) => setRsvpSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border rounded-xl focus:border-gold outline-none" />
+                    </div>
+                    <select value={rsvpStatusFilter} onChange={(e) => setRsvpStatusFilter(e.target.value)} className="px-4 py-2 border rounded-xl outline-none">
+                      <option value="all">Todos os Status</option>
+                      <option value="confirmed">Confirmados</option>
+                      <option value="declined">Recusados</option>
+                    </select>
+                    <button onClick={() => fetchData()} className="bg-green-600 text-white px-4 py-2 rounded-xl flex items-center gap-2"><Download className="w-4 h-4" /> Exportar</button>
+                  </div>
+                  <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                          <tbody className="divide-y divide-gray-100">
+                              {rsvps.filter(r => r.guestName.toLowerCase().includes(rsvpSearchTerm.toLowerCase())).map(rsvp => (
+                                  <tr key={rsvp.id}>
+                                      <td className="px-6 py-4 font-medium">{rsvp.guestName}</td>
+                                      <td className="px-6 py-4">{rsvp.attending ? '✅' : '❌'}</td>
+                                      <td className="px-6 py-4">{rsvp.guests_count}</td>
+                                      <td className="px-6 py-4">{rsvp.tableAssignment || '-'}</td>
+                                      <td className="px-6 py-4 flex gap-2">
+                                        <a href={`/${selectedEvent.slug}/ticket/${rsvp.id}`} target="_blank" rel="noreferrer">🎫</a>
+                                      </td>
+                                  </tr>
+                              ))}
+                          </tbody>
+                      </table>
+                  </div>
                 </div>
-              </div>
              </div>
         )}
 
-        {/* --- SEATING CHART TAB --- */}
-        {activeTab === 'seating' && <SeatingChart rsvps={rsvps} />}
-        
-        {/* --- TABLE MANAGEMENT TAB --- */}
-        {activeTab === 'management' && <TableManagement rsvps={rsvps} />}
-
-        {/* --- TICKETS GALLERY TAB --- */}
-        {activeTab === 'tickets' && <TicketsGallery rsvps={rsvps} />}
-
-        {/* --- MESSAGES MANAGEMENT TAB --- */}
-        {activeTab === 'messages' && <MessagesManagement />}
+        {activeTab === 'seating' && <SeatingChart rsvps={rsvps} eventId={selectedEvent?.id} />}
+        {activeTab === 'management' && <TableManagement rsvps={rsvps} eventId={selectedEvent?.id} onUpdate={fetchData} />}
+        {activeTab === 'content' && <StoryManagement eventId={selectedEvent?.id} event={selectedEvent} />}
+        {activeTab === 'tickets' && <TicketsGallery rsvps={rsvps} eventId={selectedEvent?.id} />}
+        {activeTab === 'messages' && <MessagesManagement eventId={selectedEvent?.id} />}
 
       </div>
 
-      <InviteModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveInvite}
-        invite={editingInvite}
-        isLoading={isLoading}
-      />
-
-      <ConfirmModal 
-        isOpen={confirmModal.isOpen}
-        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={confirmModal.onConfirm}
-        title={confirmModal.title}
-        message={confirmModal.message}
-        confirmText={confirmModal.confirmText}
-        isDangerous={confirmModal.isDangerous}
-        isLoading={isLoading}
-      />
+      <InviteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveInvite} invite={editingInvite} isLoading={isLoading} />
+      <ConfirmModal isOpen={confirmModal.isOpen} onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))} onConfirm={confirmModal.onConfirm} title={confirmModal.title} message={confirmModal.message} confirmText={confirmModal.confirmText} isDangerous={confirmModal.isDangerous} isLoading={isLoading} />
     </div>
   );
 };
 
 export default AdminDashboard;
-

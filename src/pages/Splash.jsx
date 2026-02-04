@@ -1,22 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useEvent } from '../contexts/EventContext';
 import weddingLogo from '../assets/wedding_icon/wedding_icon.png';
 
 const Splash = ({ isAutomatic = false }) => {
+  const { eventData, loading, theme } = useEvent();
   const [isPlaying, setIsPlaying] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const audioRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Create audio element
-    audioRef.current = new Audio('/music/someday.mp3');
+    if (loading || !eventData) return;
+
+    // Use music URL from theme/database if available, else default
+    const musicUrl = theme?.music_url || '/music/someday.mp3';
+    audioRef.current = new Audio(musicUrl);
     audioRef.current.loop = true;
 
     // If automatic, try to play and countdown
     if (isAutomatic) {
-      // Set preference immediately so MusicPlayer picks it up later
       localStorage.setItem('musicPlaying', 'true');
       
       const play = () => {
@@ -33,10 +37,7 @@ const Splash = ({ isAutomatic = false }) => {
         }
       };
 
-      // Try autoplay
       play();
-
-      // Listen for interaction to unlock if blocked
       window.addEventListener('click', play);
       window.addEventListener('touchstart', play);
 
@@ -53,30 +54,23 @@ const Splash = ({ isAutomatic = false }) => {
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      if (audioRef.current) audioRef.current.pause();
     };
-  }, [isAutomatic]);
+  }, [isAutomatic, loading, eventData, theme]);
 
   const handleEnter = () => {
-    // Start music when entering the site
     if (audioRef.current && !isPlaying) {
       const playPromise = audioRef.current.play();
-      
       if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-            localStorage.setItem('musicPlaying', 'true');
-          })
-          .catch(() => {
-            // Autoplay was prevented, user needs to interact first
-            console.log("Autoplay prevented - user interaction required");
-          });
+        playPromise.then(() => {
+          setIsPlaying(true);
+          localStorage.setItem('musicPlaying', 'true');
+        }).catch(err => console.log("Autoplay prevented", err));
       }
     }
-    navigate('/home');
+    if (eventData) {
+        navigate(`/${eventData.slug}/home`);
+    }
   };
 
   const toggleMusic = () => {
@@ -87,20 +81,36 @@ const Splash = ({ isAutomatic = false }) => {
         localStorage.setItem('musicPlaying', 'false');
       } else {
         const playPromise = audioRef.current.play();
-        
         if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              setIsPlaying(true);
-              localStorage.setItem('musicPlaying', 'true');
-            })
-            .catch(() => {
-              console.log("Playback failed");
-            });
+          playPromise.then(() => {
+            setIsPlaying(true);
+            localStorage.setItem('musicPlaying', 'true');
+          }).catch(err => console.log("Playback failed", err));
         }
       }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F9F7F4] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div>
+      </div>
+    );
+  }
+
+  // Fallback metadata if eventData is missing fields
+  const names = {
+    bride: eventData?.bride_name || 'Binth',
+    groom: eventData?.groom_name || 'Jubílio'
+  };
+
+  const groomParents = eventData?.groom_parents || { father: 'Filiano J. Maússe', mother: 'Cezartina S. Sitoe' };
+  const brideParents = eventData?.bride_parents || { father: 'Mário H. Buque', mother: 'Ana V. Ngovene' };
+
+  const eventDate = eventData?.date 
+    ? new Date(eventData.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).replace(/ de /g, ' • ')
+    : '07 • Março • 2026';
 
   return (
     <div className="min-h-screen bg-[#F9F7F4] flex items-center justify-center relative overflow-hidden p-4">
@@ -129,8 +139,8 @@ const Splash = ({ isAutomatic = false }) => {
             className="mb-6 md:mb-8 flex justify-center"
           >
             <img 
-              src={weddingLogo} 
-              alt="B&J Logo" 
+              src={eventData?.logo_url || weddingLogo} 
+              alt="Wedding Logo" 
               className="w-24 h-24 md:w-32 md:h-32 object-contain"
             />
           </motion.div>
@@ -148,15 +158,15 @@ const Splash = ({ isAutomatic = false }) => {
             
             <div className="flex flex-col md:flex-row items-center justify-center gap-1 md:gap-8">
               <div className="text-center">
-                <p className="text-[11px] md:text-base font-medium tracking-tight">Ana V. Ngovene</p>
-                <p className="text-[11px] md:text-base font-medium tracking-tight">Mário H. Buque</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">{brideParents.mother}</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">{brideParents.father}</p>
               </div>
 
               <span className="text-base md:text-xl text-gold font-serif italic opacity-60 my-0.5 md:my-0">&</span>
 
               <div className="text-center">
-                <p className="text-[11px] md:text-base font-medium tracking-tight">Cezartina S. Sitoe</p>
-                <p className="text-[11px] md:text-base font-medium tracking-tight">Filiano J. Maússe</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">{groomParents.mother}</p>
+                <p className="text-[11px] md:text-base font-medium tracking-tight">{groomParents.father}</p>
               </div>
             </div>
           </motion.div>
@@ -169,7 +179,7 @@ const Splash = ({ isAutomatic = false }) => {
             className="mb-8 md:mb-12"
           >
             <h1 className="text-4xl md:text-7xl font-serif text-neutral-gray mb-2 md:mb-4">
-              Binth
+              {names.bride}
             </h1>
             <div className="flex items-center justify-center gap-3 md:gap-4 my-4 md:my-6">
               <div className="w-12 md:w-16 h-px bg-neutral-gray/30"></div>
@@ -177,7 +187,7 @@ const Splash = ({ isAutomatic = false }) => {
               <div className="w-12 md:w-16 h-px bg-neutral-gray/30"></div>
             </div>
             <h1 className="text-4xl md:text-7xl font-serif text-neutral-gray">
-              Jubílio
+              {names.groom}
             </h1>
           </motion.div>
 
@@ -190,7 +200,7 @@ const Splash = ({ isAutomatic = false }) => {
           >
             <div className="w-px h-8 md:h-12 bg-neutral-gray/20 mx-auto mb-3 md:mb-4"></div>
             <p className="text-xs md:text-base tracking-[0.3em] text-neutral-gray/70 uppercase">
-              07 • Março • 2026
+              {eventDate}
             </p>
             <div className="w-px h-8 md:h-12 bg-neutral-gray/20 mx-auto mt-3 md:mb-4"></div>
           </motion.div>

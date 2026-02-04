@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Countdown from './Countdown';
 import FloatingParticles from './FloatingParticles';
 import RotatingQuotes from './RotatingQuotes';
+import { useEvent } from '../contexts/EventContext';
 
 // Assets
 import heroImage from '../assets/hero.jpg';
@@ -13,38 +14,20 @@ import beachSmile from '../assets/beach_smile.jpg';
 import brideBench from '../assets/bride_bench.jpg';
 
 const MobileHome = () => {
-  const storyMilestones = [
-    {
-      year: '2021',
-      title: 'A Primeira Tentativa',
-      description: 'Em 2021, Jubílio fez a sua primeira tentativa de aproximação, usando como pretexto uma camisola emprestada. Uma estratégia tímida... Mas Deus já tinha o tempo certo preparado.',
-      image: beachHoldHands
-    },
-    {
-      year: '2022',
-      title: 'O Recomeço',
-      description: 'Após uma vigília, Jubílio voltou a falar com Binth. Jubílio revelou seu coração, e em dezembro de 2022, Binth sentiu que estava pronta para dizer "sim".',
-      image: beachHug
-    },
-    {
-      year: '2023',
-      title: 'O Primeiro Encontro',
-      description: 'Tiveram o primeiro encontro como namorados no D\'bambu — o lugar favorito de Jubílio, que se tornou ainda mais especial desde aquele dia.',
-      image: beachKiss
-    },
-    {
-      year: '2024',
-      title: 'Distância que Fortaleceu',
-      description: 'A distância física entre Maputo e Pemba não enfraqueceu o que estavam construindo. Em 5 de dezembro, selaram o propósito de casar com o anel de compromisso.',
-      image: beachSmile
-    },
-    {
-        year: '2025',
-        title: 'Rumo ao Grande Dia',
-        description: '2025 trouxe as famílias mais próximas, o pedido formal e a confirmação de que Deus estava — e sempre esteve — no centro de tudo.',
-        image: brideBench
+  const { eventData } = useEvent();
+
+  const storyMilestones = React.useMemo(() => {
+    if (eventData?.story_json?.length > 0) {
+      return eventData.story_json;
     }
-  ];
+    return [
+      { year: '2021', title: 'A Primeira Tentativa', description: 'Em 2021, Jubílio fez a sua primeira tentativa...', image: beachHoldHands },
+      { year: '2022', title: 'O Recomeço', description: 'Após uma vigília, Jubílio voltou a falar...', image: beachHug },
+      { year: '2023', title: 'O Primeiro Encontro', description: 'Tiveram o primeiro encontro no D\'bambu...', image: beachKiss },
+      { year: '2024', title: 'Distância que Fortaleceu', description: 'A distância física entre Maputo e Pemba...', image: beachSmile },
+      { year: '2025', title: 'Rumo ao Grande Dia', description: '2025 trouxe as famílias mais próximas...', image: brideBench }
+    ];
+  }, [eventData]);
 
   return (
     <div className="relative bg-white overflow-hidden pb-10">
@@ -58,7 +41,7 @@ const MobileHome = () => {
           transition={{ duration: 10, ease: "linear" }}
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url(${heroImage})`,
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url(${eventData?.hero_image_url || heroImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -71,7 +54,21 @@ const MobileHome = () => {
             transition={{ duration: 1 }}
             className="text-5xl font-serif text-white mb-4 leading-tight"
           >
-            Binth <br /> <span className="text-gold">&</span> <br /> Jubílio
+            {eventData?.groom_name && eventData?.bride_name ? (
+              <>
+                {eventData.bride_name} <br /> <span className="text-gold">&</span> <br /> {eventData.groom_name}
+              </>
+            ) : eventData?.title ? (
+              <>
+                {eventData.title.includes('&') ? eventData.title.split('&')[0] : eventData.title} 
+                <br /> <span className="text-gold">&</span> <br /> 
+                {eventData.title.includes('&') ? eventData.title.split('&')[1] : ''}
+              </>
+            ) : (
+              <>
+                Binth <br /> <span className="text-gold">&</span> <br /> Jubílio
+              </>
+            )}
           </motion.h1>
           <motion.div
             initial={{ opacity: 0 }}
@@ -85,7 +82,9 @@ const MobileHome = () => {
             transition={{ delay: 1 }}
             className="text-white text-lg tracking-[0.2em] font-light mb-8"
           >
-            07.03.2026
+            {eventData?.date 
+              ? new Date(eventData.date).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+              : '07.03.2026'}
           </motion.p>
           
           <motion.div
@@ -202,12 +201,12 @@ const MobileHome = () => {
               <span className="mr-2">💒</span> Cerimônia
             </h3>
             <div className="space-y-3 text-gray-600 text-sm">
-              <p><span className="font-semibold text-neutral-800">Local:</span> MEA Congregação de Mateque</p>
+              <p><span className="font-semibold text-neutral-800">Local:</span> {eventData?.venue_name || 'MEA Congregação de Mateque'}</p>
               <p><span className="font-semibold text-neutral-800">Horário:</span> 10:00h</p>
               <p><span className="font-semibold text-neutral-800">Traje:</span> Passeio Completo</p>
             </div>
             <a 
-              href="https://www.google.com/maps/search/?api=1&query=MEA+Congregação+de+Mateque"
+              href={eventData?.google_maps_url || "https://www.google.com/maps/search/?api=1&query=MEA+Congregação+de+Mateque"}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center text-gold font-bold text-xs uppercase tracking-widest bg-white px-4 py-2 rounded-full shadow-sm"
@@ -227,12 +226,12 @@ const MobileHome = () => {
               <span className="mr-2">🥂</span> Recepção
             </h3>
             <div className="space-y-3 text-gray-600 text-sm">
-              <p><span className="font-semibold text-neutral-800">Local:</span> THAYANA Eventos</p>
+              <p><span className="font-semibold text-neutral-800">Local:</span> {eventData?.venue_address || 'THAYANA Eventos'}</p>
               <p><span className="font-semibold text-neutral-800">Horário:</span> 14:00h</p>
               <p><span className="font-semibold text-neutral-800">Destaque:</span> Celebração e Confraternização</p>
             </div>
             <a 
-              href="https://www.google.com/maps/search/?api=1&query=THAYANA+Eventos" 
+              href={eventData?.google_maps_url || "https://www.google.com/maps/search/?api=1&query=THAYANA+Eventos"} 
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center text-gold font-bold text-xs uppercase tracking-widest bg-white px-4 py-2 rounded-full shadow-sm"
@@ -250,7 +249,7 @@ const MobileHome = () => {
              Faltam apenas...
           </h2>
         </div>
-        <Countdown targetDate="2026-03-07T10:00:00" />
+        <Countdown targetDate={eventData?.date || "2026-03-07T10:00:00"} />
       </section>
 
       {/* 7. Rotating Quotes */}

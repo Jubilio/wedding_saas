@@ -5,8 +5,10 @@ import FloatingParticles from '../components/FloatingParticles';
 import RotatingQuotes from '../components/RotatingQuotes';
 import MobileHome from '../components/MobileHome';
 import heroImage from '../assets/hero.jpg';
+import { useEvent } from '../contexts/EventContext';
 
 const Home = () => {
+  const { eventData } = useEvent();
   const [scrollY, setScrollY] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -38,7 +40,7 @@ const Home = () => {
         <motion.div
           className="absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImage})`,
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${eventData?.hero_image_url || heroImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             transform: `translateY(${scrollY * 0.5}px)`,
@@ -53,7 +55,9 @@ const Home = () => {
             transition={{ delay: 0.3, duration: 0.8 }}
             className="text-5xl md:text-7xl font-serif mb-4"
           >
-            Binth & Jubílio
+            {eventData?.groom_name && eventData?.bride_name 
+              ? `${eventData.bride_name} & ${eventData.groom_name}`
+              : eventData?.title || 'Binth & Jubílio'}
           </motion.h1>
           <motion.p
             initial={{ y: 30, opacity: 0 }}
@@ -61,7 +65,9 @@ const Home = () => {
             transition={{ delay: 0.6, duration: 0.8 }}
             className="text-xl md:text-2xl mb-2"
           >
-            07 de Março de 2026
+            {eventData?.date 
+              ? new Date(eventData.date).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
+              : '07 de Março de 2026'}
           </motion.p>
           <motion.p
             initial={{ y: 30, opacity: 0 }}
@@ -69,7 +75,7 @@ const Home = () => {
             transition={{ delay: 0.9, duration: 0.8 }}
             className="text-lg md:text-xl"
           >
-            Maputo, Moçambique
+            {eventData?.venue_name || 'Maputo, Moçambique'}
           </motion.p>
           
           {/* Save the Date Badge */}
@@ -141,7 +147,7 @@ const Home = () => {
           >
             <span className="font-light">Contagem</span> <span className="font-bold text-gold">Regressiva</span>
           </motion.h2>
-          <Countdown targetDate="2026-03-07T10:00:00" />
+          <Countdown targetDate={eventData?.date || "2026-03-07T10:00:00"} />
         </div>
       </motion.section>
 

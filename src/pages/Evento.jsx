@@ -1,7 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useEvent } from '../contexts/EventContext';
 
 const Evento = () => {
+  const { eventData } = useEvent();
+  
+  const eventDate = eventData?.date 
+    ? new Date(eventData.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+    : '07 de Março de 2026';
+
   return (
     <div className="pt-24 pb-20">
       <div className="container mx-auto px-4">
@@ -19,7 +26,9 @@ const Evento = () => {
           transition={{ delay: 0.2 }}
           className="text-center text-gray-600 mb-16 max-w-2xl mx-auto"
         >
-          Celebraremos nosso amor em dois momentos especiais
+          {eventData?.groom_name && eventData?.bride_name 
+            ? `O grande dia de ${eventData.bride_name} & ${eventData.groom_name}`
+            : 'Celebraremos nosso amor em dois momentos especiais'}
         </motion.p>
 
         {/* Cerimônia */}
@@ -44,19 +53,19 @@ const Evento = () => {
               <ul className="space-y-4 text-gray-600">
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">📅 Data:</span>
-                  07 de Março de 2026
+                  {eventDate}
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">🕐 Horário:</span>
-                  10:00
+                  {eventData?.ceremony_time || '10:00'}
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">📍 Local:</span>
-                  MEA Congregação de Mateque<br />
+                  {eventData?.venue_name || 'Local a Confirmar'}<br />
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">👔 Dress Code:</span>
-                  Passeio Completo / Formal
+                  {eventData?.dress_code || 'Passeio Completo / Formal'}
                 </li>
               </ul>
             </motion.div>
@@ -65,18 +74,24 @@ const Evento = () => {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="h-80 md:h-auto rounded-2xl overflow-hidden shadow-lg"
+              className="h-80 md:h-auto rounded-2xl overflow-hidden shadow-lg border border-gray-100"
             >
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1m2!1s0x1ee6950064394cff%3A0x371c750d8ad6a371!2sMEA%20Congrega%C3%A7%C3%A3o%20de%20Mateque!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1ee6950064394cff%3A0x371c750d8ad6a371!2sMEA%20Congrega%C3%A7%C3%A3o%20de%20Mateque!5e0!3m2!1spt-PT!2smz!4v1700000000000!5m2!1spt-PT!2smz"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Mapa - MEA Congregação de Mateque"
-              ></iframe>
+              {eventData?.google_maps_url ? (
+                <iframe
+                  src={eventData.google_maps_url.includes('embed') ? eventData.google_maps_url : `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(eventData.venue_name)}`}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Mapa do Local"
+                ></iframe>
+              ) : (
+                <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-400">
+                   <p>Mapa não configurado</p>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
@@ -114,15 +129,15 @@ const Evento = () => {
               <ul className="space-y-4 text-gray-600">
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">📅 Data:</span>
-                  07 de Março de 2026
+                  {eventDate}
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">🕐 Horário:</span>
-                  14:00
+                  {eventData?.reception_time || '14:00'}
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">📍 Local:</span>
-                  THAYANA Eventos<br />
+                  {eventData?.reception_venue || eventData?.venue_address || 'Local a Confirmar'}<br />
                 </li>
                 <li className="flex items-start">
                   <span className="font-bold mr-2 text-neutral-gray">🎉 Ambiente:</span>
@@ -135,36 +150,12 @@ const Evento = () => {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="h-80 md:h-auto rounded-2xl overflow-hidden shadow-lg"
+              className="h-80 md:h-auto rounded-2xl overflow-hidden shadow-lg bg-gray-50 flex items-center justify-center text-gray-400"
             >
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1m2!1s0x1ee68ddc04d30457%3A0xc99972a103bd0b80!2sTHAYANA%20Eventos!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1ee68ddc04d30457%3A0xc99972a103bd0b80!2sTHAYANA%20Eventos!5e0!3m2!1spt-PT!2smz!4v1700000000000!5m2!1spt-PT!2smz"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Mapa - THAYANA Eventos"
-              ></iframe>
+               <p>Informações de localização da recepção</p>
             </motion.div>
           </div>
         </div>
-
-        {/* Notas Importantes */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto mt-16 bg-gradient-to-r from-gold/10 to-gold/5 p-8 rounded-2xl"
-        >
-          <h3 className="text-xl font-serif text-neutral-gray mb-4 text-center">📌 Notas Importantes</h3>
-          <ul className="space-y-2 text-gray-600 text-center">
-            <li>• A cerimônia religiosa e civil acontecerão no mesmo local (MEA Mateque)</li>
-            <li>• Após a cerimônia, seguiremos para a recepção no THAYANA Eventos</li>
-            <li>• Recomendamos chegar com 15 minutos de antecedência</li>
-          </ul>
-        </motion.div>
       </div>
     </div>
   );

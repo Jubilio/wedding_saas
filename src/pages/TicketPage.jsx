@@ -34,8 +34,7 @@ const TicketPage = () => {
         setRsvp({
           ...data,
           guestName: data.guest_name,
-          inviteLabel: data.invites?.label || 
-                       (data.invites?.event && data.invites.event !== 'Casamento Binth & Jubilio' ? data.invites.event : 'Mesa Reservada')
+          inviteLabel: data.invites?.label || 'Mesa Reservada'
         });
       } catch (err) {
         console.error('Error fetching ticket:', err);
@@ -67,7 +66,7 @@ const TicketPage = () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Ticket não encontrado</h1>
           <p className="text-gray-500 mb-6">{error || 'O ticket solicitado não existe ou foi removido.'}</p>
           <Link 
-            to="/home"
+            to="/"
             className="inline-flex items-center gap-2 bg-gold text-white px-6 py-3 rounded-xl font-medium hover:bg-gold/90 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -97,7 +96,7 @@ const TicketPage = () => {
         {/* Back Link */}
         <div className="text-center mt-8">
           <Link 
-            to="/home"
+            to="/"
             className="inline-flex items-center gap-2 text-gray-500 hover:text-gold transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

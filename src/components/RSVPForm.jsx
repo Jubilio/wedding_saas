@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import InvitationCard from './InvitationCard';
 import DOMPurify from 'dompurify';
+import { useEvent } from '../contexts/EventContext';
 
 
 const RSVPForm = ({ inviteData }) => {
   const navigate = useNavigate();
+  const { eventSlug, eventData } = useEvent();
   const [formData, setFormData] = useState({
     name: '',
     attending: '',
@@ -26,7 +28,7 @@ const RSVPForm = ({ inviteData }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Rules from inviteData
-  const { invite_id, label, max_guests, allow_plus_one, guests: allowedGuests } = inviteData || {};
+  const { invite_id, event_id, label, max_guests, allow_plus_one, guests: allowedGuests } = inviteData || {};
 
   // Sanitize input
   const sanitizeInput = (input) => {
@@ -133,6 +135,7 @@ const RSVPForm = ({ inviteData }) => {
       const { data, error } = await supabase.functions.invoke('submit-rsvp', {
         body: {
           invite_id,
+          event_id,
           guest_name: displayName, // Save the combined name to DB
           attending: formData.attending === 'yes',
           guests_count: formData.attending === 'yes' ? count : 0,
@@ -166,7 +169,7 @@ const RSVPForm = ({ inviteData }) => {
       setValidatedGuest(null);
       setSubmitted(false);
       setSubmittedRsvpId(null);
-      navigate('/home');
+      navigate(`/${eventSlug}/home`);
   };
 
   if (!inviteData) {
@@ -192,7 +195,7 @@ const RSVPForm = ({ inviteData }) => {
   // Consistent table name selection
   const getTicketTableName = () => {
     if (label) return label;
-    if (inviteData.event && inviteData.event !== 'Casamento Binth & Jubilio') return inviteData.event;
+    if (eventData?.title) return eventData.title;
     return 'Mesa Reservada';
   };
 
@@ -217,7 +220,7 @@ const RSVPForm = ({ inviteData }) => {
               
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
                 <a
-                  href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Casamento de Binth & Jubílio')}&dates=20260307T100000/20260307T220000&details=${encodeURIComponent('Celebrar o amor de Binth & Jubílio! ❤️\n\nConfira mais detalhes no site: https://binthjubilio.netlify.app/')}&location=${encodeURIComponent('Maputo, Moçambique')}&sf=true&output=xml`}
+                  href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Casamento de ' + (eventData?.title || 'Binth & Jubílio'))}&dates=20260307T100000/20260307T220000&details=${encodeURIComponent('Celebrar o amor de ' + (eventData?.title || 'Binth & Jubílio') + '! ❤️\n\nConfira mais detalhes no site: ' + window.location.origin + '/' + eventSlug)}&location=${encodeURIComponent('Maputo, Moçambique')}&sf=true&output=xml`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-md hover:shadow-lg w-full sm:w-auto"
