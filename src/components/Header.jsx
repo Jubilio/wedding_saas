@@ -41,6 +41,7 @@ const Header = () => {
     { name: 'O Evento', path: `/${eventSlug}/evento` },
     { name: 'Galeria', path: `/${eventSlug}/galeria` },
     { name: 'Lista de Presentes', path: `/${eventSlug}/presentes` },
+    { name: 'Mensagens', path: `/${eventSlug}/mensagens` },
     { name: 'Contato', path: `/${eventSlug}/contato` },
   ];
 

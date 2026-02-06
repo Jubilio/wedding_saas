@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import FloatingParticles from '../components/FloatingParticles';
-import { Send, Plus, X } from 'lucide-react';
+import { Send, Plus, X, Camera, Heart, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useEvent } from '../contexts/EventContext';
 
 // Pastel colors for cards
 const colors = [
@@ -19,12 +20,15 @@ const colors = [
 const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
 const MessagesWall = () => {
+  const { eventData } = useEvent();
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newName, setNewName] = useState('');
   const [newMessage, setNewMessage] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -42,7 +46,7 @@ const MessagesWall = () => {
         // 2. Fetch from public_messages
         const { data: publicData, error: publicError } = await supabase
           .from('public_messages')
-          .select('id, name, message, created_at')
+          .select('id, name, message, created_at, image_url, likes_count')
           .order('created_at', { ascending: false });
 
         if (publicError) console.error('Error fetching public messages:', publicError);
@@ -60,8 +64,11 @@ const MessagesWall = () => {
           id: m.id,
           name: m.name,
           message: m.message,
+          image_url: m.image_url,
+          likes_count: m.likes_count || 0,
           date: new Date(m.created_at),
-          color: getRandomColor()
+          color: getRandomColor(),
+          is_public: true
         }));
 
         const combined = [...rsvpMsgs, ...publicMsgs].sort((a, b) => b.date - a.date);
@@ -76,6 +83,61 @@ const MessagesWall = () => {
     fetchMessages();
   }, []);
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Imagem muito grande! Máximo 5MB');
+        return;
+      }
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleLike = async (msgId, isPublic) => {
+    if (!isPublic) return; // RSVPs are immutable here for simplicity
+
+    // Optimistic update
+    setMessages(prev => prev.map(m => 
+      m.id === msgId ? { ...m, likes_count: (m.likes_count || 0) + 1 } : m
+    ));
+
+    try {
+      const { data } = await supabase
+        .from('public_messages')
+        .select('likes_count')
+        .eq('id', msgId)
+        .single();
+      
+      await supabase
+        .from('public_messages')
+        .update({ likes_count: (data?.likes_count || 0) + 1 })
+        .eq('id', msgId);
+    } catch (err) {
+      console.error('Error liking:', err);
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!selectedFile) return null;
+    
+    const fileExt = selectedFile.name.split('.').pop();
+    const fileName = `mural/${Date.now()}.${fileExt}`;
+    
+    const { error } = await supabase.storage
+      .from('wedding-assets')
+      .upload(fileName, selectedFile);
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('wedding-assets')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
   const handleSubmitMessage = async (e) => {
     e.preventDefault();
     if (!newName || !newMessage) {
@@ -85,22 +147,34 @@ const MessagesWall = () => {
 
     setIsSubmitting(true);
     try {
+      let imageUrl = null;
+      if (selectedFile) {
+        imageUrl = await uploadImage();
+      }
+
       const { error } = await supabase
         .from('public_messages')
-        .insert([{ name: newName, message: newMessage }]);
+        .insert([{ 
+          name: newName, 
+          message: newMessage, 
+          image_url: imageUrl,
+          event_id: eventData?.id 
+        }]);
 
       if (error) throw error;
 
       toast.success('Mensagem enviada com carinho! ❤️');
       setNewName('');
       setNewMessage('');
+      setSelectedFile(null);
+      setImagePreview(null);
       setShowModal(false);
-      // Refresh list
+      
+      // Refresh list locally instead of reload
       const fetchMessages = async () => {
-        setIsLoading(true);
-        // ... (repeated fetch logic is cleaner with a separate function, but keeping it simple for replacement)
-        // For simplicity redirect or just wait for next load. 
-        // Actually let's just trigger a local refresh
+        // ... same fetch logic but maybe just append would be better. 
+        // For now, reload is simpler but let's just use window.location.reload() 
+        // as per original file or just fetch again.
         window.location.reload(); 
       };
       fetchMessages();
@@ -166,9 +240,19 @@ const MessagesWall = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`break-inside-avoid rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border ${msg.color} relative group`}
+                className={`break-inside-avoid rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border ${msg.color} relative group overflow-hidden ${msg.image_url ? 'pt-4 px-4 pb-6' : 'p-8'}`}
               >
-                <div className="absolute -top-3 -left-3 text-4xl opacity-20 group-hover:opacity-40 transition-opacity">
+                {msg.image_url && (
+                  <div className="mb-4 overflow-hidden rounded-xl bg-white p-2 shadow-inner group-hover:rotate-1 transition-transform duration-500">
+                    <img 
+                      src={msg.image_url} 
+                      alt="Polaroid" 
+                      className="w-full aspect-[4/3] object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+
+                <div className="absolute -top-3 -left-3 text-4xl opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
                   ❝
                 </div>
                 
@@ -178,14 +262,23 @@ const MessagesWall = () => {
                 
                 <div className="flex items-center justify-between border-t border-black/5 pt-4">
                   <div>
-                    <p className="font-bold text-gray-800 text-sm">{msg.name}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="font-bold text-gray-800 text-sm italic">~ {msg.name}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400">
                       {msg.date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}
                     </p>
                   </div>
-                  <div className="text-2xl opacity-50">
-                    ❤️
-                  </div>
+                  {msg.is_public && (
+                    <button 
+                      onClick={() => handleLike(msg.id, true)}
+                      className="flex items-center gap-1 group/heart"
+                    >
+                      <span className="text-xs font-bold text-rose-400 group-hover/heart:scale-110 transition-transform">
+                        {msg.likes_count || ''}
+                      </span>
+                      <Heart className={`w-5 h-5 transition-colors ${msg.likes_count > 0 ? 'fill-rose-400 text-rose-400' : 'text-gray-300 group-hover/heart:text-rose-400'}`} />
+                    </button>
+                  )}
+                  {!msg.is_public && <div className="text-xl opacity-20">🤍</div>}
                 </div>
               </motion.div>
             ))}
@@ -220,6 +313,30 @@ const MessagesWall = () => {
               <h2 className="text-2xl font-serif text-charcoal mb-6">Deixe seu carinho</h2>
               
               <form onSubmit={handleSubmitMessage} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 font-serif">Acompanhar com uma foto?</label>
+                  <div className="flex flex-col gap-4">
+                    {imagePreview ? (
+                      <div className="relative rounded-2xl overflow-hidden aspect-video bg-gray-50 border-2 border-dashed border-gray-200 group">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                        <button 
+                          type="button"
+                          onClick={() => { setSelectedFile(null); setImagePreview(null); }}
+                          className="absolute top-2 right-2 p-2 bg-white/90 rounded-full shadow-lg hover:bg-white transition-colors"
+                        >
+                          <X className="w-4 h-4 text-rose-500" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center py-8 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 cursor-pointer hover:bg-gray-100 hover:border-gold/50 transition-all group">
+                        <Camera className="w-8 h-8 text-gray-300 group-hover:text-gold transition-colors mb-2" />
+                        <span className="text-sm text-gray-400 group-hover:text-gold">Clique para adicionar foto (Opcional)</span>
+                        <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Seu Nome</label>
                   <input

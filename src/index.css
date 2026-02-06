@@ -1,9 +1,60 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;600&family=Outfit:wght@300;400;700&family=Parisienne&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,700;1,400&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* Default: Classic Gold */
+  --template-gold: #d4af37;
+  --template-secondary: #b59410;
+  --template-bg: #ffffff;
+  --template-bg-soft: #f9fafb;
+  --template-text: #374151;
+  --template-text-soft: #6b7280;
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Montserrat", sans-serif;
+  --template-radius: 1.5rem;
+}
+
+/* 🌿 Modern Minimalist */
+.template-modern-minimalist {
+  --template-gold: #8ba888; /* Sage Green */
+  --template-secondary: #6b8e67;
+  --template-bg: #fcfcfc;
+  --template-bg-soft: #f3f4f1;
+  --template-text: #2d3436;
+  --template-text-soft: #636e72;
+  --font-serif: "Outfit", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --template-radius: 0.5rem;
+}
+
+/* 🌸 Romantic Floral */
+.template-romantic-floral {
+  --template-gold: #e8a0bf; /* Rose Dusk */
+  --template-secondary: #ba90c6;
+  --template-bg: #fff8f9;
+  --template-bg-soft: #f9f5f6;
+  --template-text: #4a403a;
+  --template-text-soft: #8b7e74;
+  --font-serif: "Parisienne", cursive;
+  --font-sans: "Cormorant Garamond", serif;
+  --template-radius: 2rem;
+}
+
+/* 🌙 Midnight Luxury (Dark Mode) */
+.template-midnight-luxury {
+  --template-gold: #c5a059; /* Bright Gold */
+  --template-secondary: #d4af37;
+  --template-bg: #0f172a; /* Slate 900 */
+  --template-bg-soft: #1e293b; /* Slate 800 */
+  --template-text: #f8fafc;
+  --template-text-soft: #94a3b8;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Inter", sans-serif;
+  --template-radius: 1rem;
+}
 
 @layer base {
   html {
@@ -11,20 +62,37 @@
   }
 
   body {
-    font-family: "Montserrat", sans-serif;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="%23D4AF37" opacity="0.3"/><circle cx="10" cy="10" r="3" fill="%23D4AF37"/></svg>'),
+    font-family: var(--font-sans);
+    color: var(--template-text);
+    background-color: var(--template-bg);
+    cursor:
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="%23D4AF37" opacity="0.3"/><circle cx="10" cy="10" r="3" fill="%23D4AF37"/></svg>'),
       auto;
+  }
+
+  /* Override specific components using variables */
+  .text-neutral-gray {
+    color: var(--template-text-soft) !important;
+  }
+  .text-gold {
+    color: var(--template-gold) !important;
+  }
+  .bg-gold {
+    background-color: var(--template-gold) !important;
+  }
+  .border-gold {
+    border-color: var(--template-gold) !important;
+  }
+  .selection\:bg-gold::selection {
+    background-color: var(--template-gold) !important;
   }
 
   a,
   button {
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23D4AF37" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="%23D4AF37"/></svg>'),
+    cursor:
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23D4AF37" opacity="0.5"/><circle cx="12" cy="12" r="4" fill="%23D4AF37"/></svg>'),
       pointer;
   }
-}
-
-body {
-  @apply font-sans text-neutral-gray bg-white antialiased;
 }
 
 h1,
@@ -33,5 +101,20 @@ h3,
 h4,
 h5,
 h6 {
-  @apply font-serif;
+  font-family: var(--font-serif);
+}
+
+/* Global Transition for Theme Switching */
+body,
+h1,
+h2,
+p,
+div,
+section,
+button {
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease,
+    border-color 0.5s ease,
+    border-radius 0.5s ease;
 }

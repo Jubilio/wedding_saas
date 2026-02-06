@@ -141,6 +141,39 @@ const RSVP = () => {
         >
           <RSVPForm inviteData={inviteData} />
         </motion.div>
+
+        {/* Support Section */}
+        {(contextEventData?.contact_phones?.length > 0 || contextEventData?.contact_email) && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-16 text-center max-w-lg mx-auto"
+          >
+             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Dúvidas? Entre em contato</h3>
+             <div className="flex flex-wrap justify-center gap-4">
+                {contextEventData.contact_phones?.map((phone, idx) => (
+                  <a 
+                    key={idx} 
+                    href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-xs font-bold text-gray-600 hover:text-gold transition-colors flex items-center gap-2"
+                  >
+                    💬 {phone}
+                  </a>
+                ))}
+                {contextEventData.contact_email && (
+                  <a 
+                    href={`mailto:${contextEventData.contact_email}`}
+                    className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 text-xs font-bold text-gray-600 hover:text-gold transition-colors flex items-center gap-2"
+                  >
+                    ✉️ Email
+                  </a>
+                )}
+             </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

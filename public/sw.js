@@ -1,12 +1,9 @@
 // Service Worker for Binth & Jubílio Wedding
 const CACHE_NAME = 'bj-wedding-v1';
 const urlsToCache = [
-  '/home',
-  '/historia',
-  '/evento',
-  '/galeria',
-  '/contato',
-  '/index.css'
+  '/',
+  '/index.css',
+  '/manifest.json'
 ];
 
 // Install event
@@ -28,11 +25,13 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Bypass SW for Supabase API and external tools
+  // Bypass SW for Supabase, Fonts AND Media files
   if (
     url.hostname.includes('supabase.co') || 
     url.hostname.includes('fonts.gstatic.com') || 
-    url.hostname.includes('fonts.googleapis.com')
+    url.hostname.includes('fonts.googleapis.com') ||
+    url.pathname.endsWith('.mp3') ||
+    url.pathname.includes('/music/')
   ) {
     return;
   }

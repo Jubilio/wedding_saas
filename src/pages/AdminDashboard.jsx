@@ -41,6 +41,7 @@ const AdminDashboard = () => {
   
   const [activeTab, setActiveTab] = useState(tabParam || 'overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLive, setIsLive] = useState(false);
   
   // RSVP Filters
   const [rsvpSearchTerm, setRsvpSearchTerm] = useState('');
@@ -109,29 +110,16 @@ const AdminDashboard = () => {
     try {
       const { data, error } = await supabase
         .from('events')
-        .select('*')
+        .select('*, theme_configs(template_id)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setEvents(data || []);
-      if (data?.length > 0) {
-        // If slug param exists, try to find that specific event
-        if (slugParam) {
-           const found = data.find(ev => ev.slug === slugParam);
-           if (found) {
-             setSelectedEvent(found);
-           } else {
-             setSelectedEvent(data[0]);
-           }
-        } else if (!selectedEvent) {
-          setSelectedEvent(data[0]);
-        }
-      }
     } catch (error) {
       console.error("Error fetching events:", error);
       toast.error("Erro ao carregar eventos.");
     }
-  }, [selectedEvent, slugParam]);
+  }, []); // NO dependencies here to prevent loops
 
   const fetchData = React.useCallback(async () => {
     if (!selectedEvent) return;
@@ -162,11 +150,67 @@ const AdminDashboard = () => {
     }
   }, [isAuthenticated, user, fetchEvents]);
 
+  // Initial selection logic (Only runs when events list is loaded and nothing is selected)
+  useEffect(() => {
+    if (events.length > 0 && !selectedEvent) {
+      if (slugParam) {
+        const found = events.find(ev => ev.slug === slugParam);
+        setSelectedEvent(found || events[0]);
+      } else {
+        setSelectedEvent(events[0]);
+      }
+    }
+  }, [events, slugParam, selectedEvent]);
+
   useEffect(() => {
     if (selectedEvent) {
       fetchData();
     }
   }, [selectedEvent, fetchData]);
+
+  // Realtime Subscriptions
+  useEffect(() => {
+    if (!selectedEvent?.id) return;
+
+    console.log("🚀 Setting up Realtime for event:", selectedEvent.id);
+    
+    const channel = supabase
+      .channel(`admin-live-${selectedEvent.id}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'rsvps',
+          filter: `event_id=eq.${selectedEvent.id}`
+        },
+        () => {
+          console.log("⚡ Realtime: RSVP Change detected!");
+          fetchRSVPs();
+          fetchInvites();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'tables',
+          filter: `event_id=eq.${selectedEvent.id}`
+        },
+        () => {
+          console.log("⚡ Realtime: Table Change detected!");
+          fetchRSVPs(); // Tables change might affect seat counts
+        }
+      )
+      .subscribe((status) => {
+        setIsLive(status === 'SUBSCRIBED');
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedEvent?.id, fetchRSVPs, fetchInvites]);
 
   const handleOpenAddModal = () => {
     setEditingInvite(null);
@@ -340,15 +384,22 @@ const AdminDashboard = () => {
                     </select>
                   )}
                 </div>
-                <p className="text-gray-500 font-medium">{selectedEvent?.title || 'Controle de acesso'}</p>
-             </div>
-          </div>
+                 <p className="text-gray-500 font-medium">{selectedEvent?.title || 'Controle de acesso'}</p>
+                 {isLive && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                       <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                       </span>
+                       <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">Sincronização Ativa</span>
+                    </div>
+                 )}
+              </div>
+           </div>
           
           <div className="flex gap-3">
              <button
               onClick={() => fetchData()}
-              disabled={isRefreshing}
-              className={`bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 font-medium ${isRefreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'Atualizando...' : 'Atualizar'}
@@ -506,7 +557,7 @@ const AdminDashboard = () => {
 
         {activeTab === 'seating' && <SeatingChart rsvps={rsvps} eventId={selectedEvent?.id} />}
         {activeTab === 'management' && <TableManagement rsvps={rsvps} eventId={selectedEvent?.id} onUpdate={fetchData} />}
-        {activeTab === 'content' && <StoryManagement eventId={selectedEvent?.id} event={selectedEvent} />}
+        {activeTab === 'content' && <StoryManagement eventId={selectedEvent?.id} event={selectedEvent} onSave={fetchEvents} />}
         {activeTab === 'tickets' && <TicketsGallery rsvps={rsvps} eventId={selectedEvent?.id} />}
         {activeTab === 'messages' && <MessagesManagement eventId={selectedEvent?.id} />}
 

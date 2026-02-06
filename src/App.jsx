@@ -129,7 +129,7 @@ const EventRoutes = () => {
 };
 
 const EventLayout = () => {
-  const { loading, error } = useEvent();
+  const { loading, error, theme } = useEvent();
   
   if (loading) return <LoadingSkeleton type="page" />;
   if (error) return (
@@ -145,49 +145,53 @@ const EventLayout = () => {
     </div>
   );
 
+  const templateClass = `template-${theme?.template_id || 'classic-gold'}`;
+
   return (
-    <>
+    <div className={`${templateClass} min-h-screen flex flex-col bg-[var(--template-bg-soft)]`}>
       <ScrollProgressIndicator />
       <Header />
-      <Routes>
-        <Route path="home" element={<Home />} />
-        <Route path="historia" element={<Historia />} />
-        <Route path="evento" element={<Evento />} />
-        <Route path="rsvp" element={<RSVP />} />
-        <Route path="galeria" element={
-          <Suspense fallback={<LoadingSkeleton type="gallery" />}>
-            <Galeria />
-          </Suspense>
-        } />
-        <Route path="presentes" element={
-          <Suspense fallback={<LoadingSkeleton type="page" />}>
-            <Presentes />
-          </Suspense>
-        } />
-        <Route path="contato" element={<Contato />} />
-        <Route path="mensagens" element={
-          <Suspense fallback={<LoadingSkeleton type="page" />}>
-            <MessagesWall />
-          </Suspense>
-        } />
-        <Route 
-          path="ticket/:rsvpId" 
-          element={
-            <Suspense fallback={<LoadingSkeleton type="page" />}>
-              <TicketPage />
+      <div className="flex-1">
+        <Routes>
+          <Route path="home" element={<Home />} />
+          <Route path="historia" element={<Historia />} />
+          <Route path="evento" element={<Evento />} />
+          <Route path="rsvp" element={<RSVP />} />
+          <Route path="galeria" element={
+            <Suspense fallback={<LoadingSkeleton type="gallery" />}>
+              <Galeria />
             </Suspense>
-          } 
-        />
-        {/* Default event page */}
-        <Route index element={<Navigate to="home" replace />} />
-      </Routes>
+          } />
+          <Route path="presentes" element={
+            <Suspense fallback={<LoadingSkeleton type="page" />}>
+              <Presentes />
+            </Suspense>
+          } />
+          <Route path="contato" element={<Contato />} />
+          <Route path="mensagens" element={
+            <Suspense fallback={<LoadingSkeleton type="page" />}>
+              <MessagesWall />
+            </Suspense>
+          } />
+          <Route 
+            path="ticket/:rsvpId" 
+            element={
+              <Suspense fallback={<LoadingSkeleton type="page" />}>
+                <TicketPage />
+              </Suspense>
+            } 
+          />
+          {/* Default event page */}
+          <Route index element={<Navigate to="home" replace />} />
+        </Routes>
+      </div>
       <Footer />
       <MusicPlayer />
       <MessagesButton />
       <MobileBottomNav />
       <QuizTrigger />
       <PWAInstallPrompt />
-    </>
+    </div>
   );
 };
 

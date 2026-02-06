@@ -1,14 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useEvent } from '../contexts/EventContext';
 
 const MusicPlayer = () => {
+  const { eventData } = useEvent();
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    // Instantiate audio object only once on mount
-    const audio = new Audio('/music/someday.mp3');
+    // Determine the source URL (Database URL or fallback)
+    const musicUrl = eventData?.music_url || '/music/someday.mp3';
+    
+    // Instantiate audio object only once on mount or when URL changes
+    const audio = new Audio(musicUrl);
     audio.loop = true;
     audioRef.current = audio;
+
+    console.log("🎵 Music Player loading source:", musicUrl);
 
     // Check saved preference
     const savedPreference = localStorage.getItem('musicPlaying');
@@ -56,7 +63,7 @@ const MusicPlayer = () => {
       audio.pause();
       audioRef.current = null;
     };
-  }, []);
+  }, [eventData?.music_url]);
 
   const togglePlay = () => {
     const audio = audioRef.current;

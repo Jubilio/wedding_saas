@@ -1,11 +1,14 @@
 import React from 'react';
-import { MessageSquareHeart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { MessageSquareHeart } from 'lucide-react';
+import { useEvent } from '../contexts/EventContext';
 
 const MessagesButton = () => {
+  const { eventSlug } = useEvent();
+  
   return (
-    <Link to="/mensagens">
+    <Link to={`/${eventSlug}/mensagens`}>
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}

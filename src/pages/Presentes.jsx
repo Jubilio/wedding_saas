@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEvent } from '../contexts/EventContext';
 
 const Presentes = () => {
@@ -9,7 +9,7 @@ const Presentes = () => {
   const groomName = eventData?.groom_name || 'Jubílio';
   const pixKey = eventData?.pix_key || 'jubilio.pix@email.com';
 
-  const giftCategories = [
+  const defaultGiftCategories = [
     {
       title: 'Casa das Loiças',
       icon: '🍽️',
@@ -53,6 +53,10 @@ const Presentes = () => {
       ],
     },
   ];
+
+  const giftCategories = (eventData?.gift_list_json && eventData.gift_list_json.length > 0) 
+    ? eventData.gift_list_json 
+    : defaultGiftCategories;
 
   return (
     <div className="pt-24 pb-20 bg-gradient-to-b from-white to-gray-50">

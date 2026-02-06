@@ -61,7 +61,7 @@ const Historia = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            src={eventData?.hero_image_url || beachPhoto} 
+            src={eventData?.story_cover_url || eventData?.hero_image_url || beachPhoto} 
             alt={`${brideName} e ${groomName}`}
             className="rounded-3xl shadow-2xl max-h-[500px] w-full max-w-4xl object-cover"
           />
@@ -76,7 +76,7 @@ const Historia = () => {
             className="bg-white p-10 rounded-[2rem] shadow-xl border-l-8 border-gold relative overflow-hidden"
           >
             <p className="text-gray-700 leading-relaxed text-xl relative z-10">
-              Esta história começa no desejo de {groomName}, no desenho silencioso da mulher que ele sonhava ter ao seu lado, e em Deus, que com toda a Sua graça, confirmou esse sonho.
+              {eventData?.story_intro || `Esta história começa no desejo de ${groomName}, no desenho silencioso da mulher que ele sonhava ter ao seu lado, e em Deus, que com toda a Sua graça, confirmou esse sonho.`}
             </p>
             <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full -mr-16 -mt-16" />
           </motion.div>

@@ -1,8 +1,18 @@
 import React from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
+import { useEvent } from '../contexts/EventContext';
 
 const Contato = () => {
+  const { eventData } = useEvent();
+  
+  const phones = Array.isArray(eventData?.contact_phones) && eventData.contact_phones.length > 0
+    ? eventData.contact_phones
+    : ["+258 84 538 5814", "+258 84 577 9565", "+258 84 389 7869"];
+    
+  const email = eventData?.contact_email || 'jubiliomausse5@gmail.com';
+  const location = eventData?.contact_location || 'Matola, Maputo, Moçambique';
+
   return (
     <div className="pt-24 pb-20">
       <div className="container mx-auto px-4">
@@ -25,9 +35,9 @@ const Contato = () => {
               <div>
                 <h3 className="text-lg font-bold text-neutral-gray">Telefones (Dúvidas)</h3>
                 <div className="space-y-1 mt-1">
-                  <a href="tel:+258845385814" className="block text-gray-600 hover:text-gold transition-colors">+258 84 538 5814</a>
-                  <a href="tel:+258845779565" className="block text-gray-600 hover:text-gold transition-colors">+258 84 577 9565</a>
-                  <a href="tel:+258843897869" className="block text-gray-600 hover:text-gold transition-colors">+258 84 389 7869</a>
+                  {phones.map((phone, idx) => (
+                    <a key={idx} href={`tel:${phone.replace(/\s+/g, '')}`} className="block text-gray-600 hover:text-gold transition-colors">{phone}</a>
+                  ))}
                 </div>
               </div>
             </div>
@@ -40,7 +50,7 @@ const Contato = () => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-neutral-gray">Email</h3>
-                <p className="text-gray-600">jubiliomausse5@gmail.com</p>
+                <p className="text-gray-600">{email}</p>
               </div>
             </div>
 
@@ -53,7 +63,7 @@ const Contato = () => {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-neutral-gray">Local</h3>
-                <p className="text-gray-600">Matola, Maputo, Moçambique</p>
+                <p className="text-gray-600">{location}</p>
               </div>
             </div>
           </div>

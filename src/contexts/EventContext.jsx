@@ -38,11 +38,13 @@ export const EventProvider = ({ children, eventSlug }) => {
 
         setEventData(event);
 
-        // Fetch Theme Config
+        // Fetch Theme Config (Resilient query: order by created_at and limit 1)
         const { data: themeData, error: themeError } = await supabase
           .from('theme_configs')
           .select('*')
           .eq('event_id', event.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         if (themeError) console.error('Error fetching theme:', themeError);

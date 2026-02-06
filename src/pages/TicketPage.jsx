@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import InvitationCard from '../components/InvitationCard';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { useEvent } from '../contexts/EventContext';
 
 const TicketPage = () => {
+  const { eventData } = useEvent();
   const { rsvpId } = useParams();
   const [rsvp, setRsvp] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,6 +94,42 @@ const TicketPage = () => {
           tableName={rsvp.inviteLabel}
           rsvpId={rsvp.id}
         />
+
+        {/* Mural CTA */}
+        <div className="mt-8 bg-rose-50 rounded-3xl p-8 text-center border border-rose-100 shadow-sm relative overflow-hidden group">
+           <div className="absolute -top-4 -right-4 w-24 h-24 bg-rose-100/50 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+           <p className="text-2xl mb-4">📸 ✍️</p>
+           <h3 className="text-xl font-serif text-rose-800 mb-2">Que tal deixar uma mensagem?</h3>
+           <p className="text-rose-600/80 text-sm mb-6">
+             Agora que confirmou sua presença, aproveite para deixar um recado especial (ou uma foto!) no nosso Mural de Afeto.
+           </p>
+           <Link 
+             to={`/${eventData?.slug || 'binth-jubilio'}/mensagens`}
+             className="inline-flex items-center gap-2 bg-rose-500 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-rose-200 hover:bg-rose-600 hover:scale-105 transition-all"
+           >
+             Ir para o Mural
+           </Link>
+        </div>
+
+        {/* Support Section */}
+        {(eventData?.contact_phones?.length > 0 || eventData?.contact_email) && (
+          <div className="mt-12 text-center">
+             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Dúvidas ou problemas com o ticket?</p>
+             <div className="flex flex-wrap justify-center gap-3">
+                {eventData.contact_phones?.map((phone, idx) => (
+                  <a 
+                    key={idx} 
+                    href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100 text-[10px] font-bold text-gray-600 hover:text-gold transition-colors"
+                  >
+                    💬 Zap: {phone}
+                  </a>
+                ))}
+             </div>
+          </div>
+        )}
 
         {/* Back Link */}
         <div className="text-center mt-8">
